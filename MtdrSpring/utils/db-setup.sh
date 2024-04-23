@@ -133,17 +133,53 @@ while ! state_done TODO_USER; do
   echo "connecting to mtdr database"
   U=$TODO_USER
   SVC=$MTDR_DB_SVC
-  sqlplus /nolog <<!
+  sqlplus /nolog <<!  
 WHENEVER SQLERROR EXIT 1
 connect admin/"$DB_PASSWORD"@$SVC
 CREATE USER $U IDENTIFIED BY "$DB_PASSWORD" DEFAULT TABLESPACE data QUOTA UNLIMITED ON data;
 GRANT CREATE SESSION, CREATE VIEW, CREATE SEQUENCE, CREATE PROCEDURE TO $U;
 GRANT CREATE TABLE, CREATE TRIGGER, CREATE TYPE, CREATE MATERIALIZED VIEW TO $U;
 GRANT CONNECT, RESOURCE, pdb_dba, SODA_APP to $U;
-CREATE TABLE TODOUSER.todoitem (id NUMBER GENERATED ALWAYS AS IDENTITY, description VARCHAR2(4000), creation_ts TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, done NUMBER(1,0) , PRIMARY KEY (id));
-insert into TODOUSER.todoitem  (description, done) values ('Manual item insert', 0);
-commit;
-!
+-- Crear tabla User
+CREATE TABLE User (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ name VARCHAR2(255),
+ account VARCHAR2(255),
+ rol VARCHAR2(255)
+);
+
+-- Crear tabla Task
+CREATE TABLE Task (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ description VARCHAR2(4000),
+ status VARCHAR2(255),
+ userID NUMBER,
+ sprintID NUMBER,
+ FOREIGN KEY (userID) REFERENCES User(id),
+ FOREIGN KEY (sprintID) REFERENCES Sprint(id)
+);
+
+-- Crear tabla Team
+CREATE TABLE Team (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ name VARCHAR2(255),
+ description VARCHAR2(4000),
+ managerID NUMBER,
+ FOREIGN KEY (managerID) REFERENCES User(id)
+);
+
+-- Crear tabla Sprint
+CREATE TABLE Sprint (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ title VARCHAR2(255),
+ status VARCHAR2(255),
+ startDate DATE,
+ endDate DATE,
+ teamID NUMBER,
+ FOREIGN KEY (teamID) REFERENCES Team(id)
+);
+
+commit;!
   state_set_done TODO_USER
   echo "finished connecting to database and creating attributes"
 done
