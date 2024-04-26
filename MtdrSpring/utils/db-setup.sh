@@ -133,7 +133,7 @@ while ! state_done TODO_USER; do
   echo "connecting to mtdr database"
   U=$TODO_USER
   SVC=$MTDR_DB_SVC
-  sqlplus /nolog <<!  
+  sqlplus /nolog <<!
 WHENEVER SQLERROR EXIT 1
 connect admin/"$DB_PASSWORD"@$SVC
 CREATE USER $U IDENTIFIED BY "$DB_PASSWORD" DEFAULT TABLESPACE data QUOTA UNLIMITED ON data;
@@ -179,7 +179,8 @@ CREATE TABLE Sprint (
  FOREIGN KEY (teamID) REFERENCES Team(id)
 );
 
-commit;!
+commit;
+!
   state_set_done TODO_USER
   echo "finished connecting to database and creating attributes"
 done
