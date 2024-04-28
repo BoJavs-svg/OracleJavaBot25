@@ -153,7 +153,7 @@ CREATE TABLE TODOUSER.Team (
  name VARCHAR2(255),
  description VARCHAR2(4000),
  managerID NUMBER,
- FOREIGN KEY (managerID) REFERENCES telegramUser(id)
+ FOREIGN KEY (managerID) REFERENCES TODOUSER.telegramUser(id)
 );
 
 CREATE TABLE TODOUSER.Sprint (
@@ -163,7 +163,7 @@ CREATE TABLE TODOUSER.Sprint (
  startDate DATE,
  endDate DATE,
  teamID NUMBER,
- FOREIGN KEY (teamID) REFERENCES Team(id)
+ FOREIGN KEY (teamID) REFERENCES TODOUSER.Team(id)
 );
 
 CREATE TABLE TODOUSER.Task (
@@ -172,8 +172,8 @@ CREATE TABLE TODOUSER.Task (
  status VARCHAR2(255),
  userID NUMBER,
  sprintID NUMBER,
- FOREIGN KEY (userID) REFERENCES telegramUser(id),
- FOREIGN KEY (sprintID) REFERENCES Sprint(id)
+ FOREIGN KEY (userID) REFERENCES TODOUSER.telegramUser(id),
+ FOREIGN KEY (sprintID) REFERENCES TODOUSER.Sprint(id)
 );
 
 -- Commit changes
