@@ -147,6 +147,24 @@ CREATE TABLE User (
  account VARCHAR2(255),
  rol VARCHAR2(255)
 );
+-- Crear tabla Sprint
+CREATE TABLE Sprint (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ title VARCHAR2(255),
+ status VARCHAR2(255),
+ startDate DATE,
+ endDate DATE,
+ teamID NUMBER,
+ FOREIGN KEY (teamID) REFERENCES Team(id)
+);
+-- Crear tabla Team
+CREATE TABLE Team (
+ id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ name VARCHAR2(255),
+ description VARCHAR2(4000),
+ managerID NUMBER,
+ FOREIGN KEY (managerID) REFERENCES User(id)
+);
 
 -- Crear tabla Task
 CREATE TABLE Task (
@@ -157,26 +175,6 @@ CREATE TABLE Task (
  sprintID NUMBER,
  FOREIGN KEY (userID) REFERENCES User(id),
  FOREIGN KEY (sprintID) REFERENCES Sprint(id)
-);
-
--- Crear tabla Team
-CREATE TABLE Team (
- id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
- name VARCHAR2(255),
- description VARCHAR2(4000),
- managerID NUMBER,
- FOREIGN KEY (managerID) REFERENCES User(id)
-);
-
--- Crear tabla Sprint
-CREATE TABLE Sprint (
- id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
- title VARCHAR2(255),
- status VARCHAR2(255),
- startDate DATE,
- endDate DATE,
- teamID NUMBER,
- FOREIGN KEY (teamID) REFERENCES Team(id)
 );
 
 commit;
