@@ -1,6 +1,6 @@
 # Java Docs
 ## Files
-- [MyTodoList](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList)
+- [MyTodoList](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/MyTodoListApplication.java)
 	- *Package*: com.springboot.MyTodoList;
 	- **@SpringBootApplication**:  CommandLineRunner Interface:   `public class MyTodoListApplication implements CommandLineRunner`  - By implementing the  `CommandLineRunner`  interface, the application can execute code after the application context is loaded.
 		-  **Main Method**:  `public static void main(String[] args) { SpringApplication.run(MyTodoListApplication.class, args); }`  - This is the entry point of the application, where the Spring Boot application is started.
