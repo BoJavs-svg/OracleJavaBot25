@@ -6,7 +6,7 @@
 		-  **Main Method**:  `public static void main(String[] args) { SpringApplication.run(MyTodoListApplication.class, args); }`  - This is the entry point of the application, where the Spring Boot application is started.
 		- **Telegram Bot Registration**: Inside the  `run`  method, a  `TelegramBotsApi`  instance is created, and the bot is registered using the  `ToDoItemBotController`  class, which presumably handles the bot's logic and interactions with users.
 	- This code sets up a Spring Boot application that integrates with the Telegram Bot API, allowing the application to respond to user commands and perform actions within the Telegram platform.
-- [CorsConfig](/config/CorsConfig.java)
+- [CorsConfig](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/config/CorsConfig.java)
 	- *Package*: com.springboot.MyTodoList.config;
 	- **CorsFilter Bean**: This method defines a bean of type `CorsFilter`, which is used to apply CORS policies to the application.
 		-  `setAllowedOrigins`: Specifies the origins that are allowed to access the application. Initially, it's set to allow specific origins, then it's overridden to allow all origins (`"*"`).
@@ -14,13 +14,13 @@
 		-  `addAllowedHeader`: Specifies the request headers that are allowed from the specified origins.
 		- `addExposedHeader`: Specifies the response headers that the browser is allowed to access.
 	- By configuring CORS policies, the application can control which origins, methods, and headers are allowed, enhancing security while still allowing necessary cross-origin interactions.
-- [DbSettings](/config/DbSettings.java)
+- [DbSettings](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/config/DbSettings.java)
 	- *Package*: com.springboot.MyTodoList.config;
 	- **Fields**: The class defines fields for database settings, including  `url`,  `username`,  `password`, and  `driver_class_name`. These fields correspond to the properties in the application's properties file that are prefixed with  `spring.datasource`.
 	-  **Getter and Setter Methods**: For each field, there are getter and setter methods. These methods are used by Spring to inject the property values from the properties file into the fields of the  `DbSettings`  class.
 	- By using `@ConfigurationProperties`, the application can easily switch between different database configurations (e.g., development, testing, production) by simply changing the properties file, without needing to modify the code.
 	- 
-- [OracleConfiguration](/config/OracleConfiguration.java)
+- [OracleConfiguration](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/config/OracleConfiguration.java)
 	- *Package*: com.springboot.MyTodoList.config;
 	-  **DataSource Bean**:  `public DataSource dataSource() throws SQLException`  - This method defines a bean of type  `DataSource`, which is used to manage database connections.
 	- **OracleDataSource Configuration**: Inside the  `dataSource`  method, an  `OracleDataSource`  object is created and configured with various settings:
@@ -28,13 +28,13 @@
 		- setURL`: Specifies the database URL. It's set using an environment variable for containerized applications and commented out for local testing.
 		- setUser`  and  `setPassword`: Specify the database username and password. They're set using environment variables for containerized applications and commented out for local testing.
 	- By defining a `DataSource` bean, the application can easily manage database connections, ensuring that connections are efficiently pooled and reused. The use of environment variables for configuration allows the application to be easily deployed in different environments, such as development, testing, and production, without needing to change the code.
-- [ToDoItemBotController](/controller/ToDoItemBotController.java)
+- [ToDoItemBotController](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/controller/ToDoItemBotController.java)
 	- *Package*: com.springboot.MyTodoList.controller;
 	- **Constructor**: The constructor  `ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService)`  initializes the bot with a token, name, and a service for managing to-do items.
 	- **onUpdateReceived Method**: This method is overridden from  `TelegramLongPollingBot`  and is called whenever an update (e.g., a message) is received from Telegram. It processes various commands and interactions, like starting the bot, listing all items, adding a new item, marking an item as done, undoing an item, deleting an item, and hiding the main screen.
 	-  **Service Methods**: The class includes methods for interacting with the to-do list service, such as  `getAllToDoItems`,  `getToDoItemById`,  `addToDoItem`,  `updateToDoItem`, and  `deleteToDoItem`. These methods are used to perform CRUD operations on to-do items.
 	- This is a  controller class to integrate a Spring Boot application with the Telegram Bot API to create an interactive bot for managing a to-do list. It showcases handling user commands, interacting with a backend service, and using the Telegram API to send responses back to users.
-- [ToDoItemController](/controller/ToDoItemController.java)
+- [ToDoItemController](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/controller/ToDoItemController.java)
 	- *Package*: com.springboot.MyTodoList.controller;
 	-  **@RestController** public class ToDoItemController
 		- **HTTP Method Mappings**: The class defines methods for handling HTTP requests, such as  `GET`,  `POST`,  `PUT`, and  `DELETE`, using annotations like  `@GetMapping`,  `@PostMapping`,  `@PutMapping`, and  `@DeleteMapping`. These methods correspond to CRUD operations (Create, Read, Update, Delete) on to-do items.
@@ -43,7 +43,7 @@
 		-   `addToDoItem`: Handles  `POST`  requests to  `/todolist`  and adds a new to-do item.
 		-   `updateToDoItem`: Handles  `PUT`  requests to  `/todolist/{id}`  and updates an existing to-do item.
 		-   `deleteToDoItem`: Handles  `DELETE`  requests to  `/todolist/{id}`  and deletes a to-do item by its ID.
-- [ToDoItem](/model/ToDoItem.java)
+- [ToDoItem](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/model/ToDoItem.java)
 	- *Package*: com.springboot.MyTodoList.model;
 	- `@Entity` - This annotation marks the class as a JPA entity, indicating that it should be mapped to a database table. The code imports `javax.persistence.*` for JPA annotations and `java.time.OffsetDateTime` for handling date and time with timezone information.
 	-  **Table Annotation**:  `@Table(name = "TODOITEM")`  - This annotation specifies the name of the database table that this entity is mapped to.
@@ -56,11 +56,11 @@
     - **Getter and Setter Methods**: For each field, there are corresponding getter and setter methods, allowing for the retrieval and modification of the field values.
     - **toString Method**: Overrides the  `toString`  method to provide a string representation of the  `ToDoItem`  object, which is useful for debugging and logging.
 	 - This class is a  JPA entity in a Spring Boot application. It defines the structure of a to-do item and how it maps to a database table. The use of JPA annotations allows the application to interact with the database in an object-oriented manner, abstracting away the details of SQL queries.
- - [ToDoItemRepository](/repository/ToDoItemRepository.java)
+ - [ToDoItemRepository](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/repository/ToDoItemRepository.java)
 	 - *Package*: com.springboot.MyTodoList.repository;
 	 - **EnableTransactionManagement Annotation**:  `@EnableTransactionManagement`  - This annotation is used at the class level to enable Spring's annotation-driven transaction management capability. It's typically used in configuration classes to enable transaction management across the application. However, in the context of a repository interface, this annotation is not directly applicable since it's more commonly used in configuration classes.
 	 - **JpaRepository Extension**:  `ToDoItemRepository extends JpaRepository<ToDoItem, Integer>`  - This line extends  `JpaRepository`, which is a specific type of repository that provides methods for CRUD operations, pagination, and sorting. The generic parameters specify the entity type (`ToDoItem`) and the type of the entity's primary key (`Integer`).
- - [WebSecurityConfiguration](/security/WebSecurityConfiguration.java)
+ - [WebSecurityConfiguration](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/security/WebSecurityConfiguration.java)
 	 - *Package*: com.springboot.MyTodoList.security;
 	 - **WebSecurityConfigurerAdapter Extension**: `WebSecurityConfiguration extends WebSecurityConfigurerAdapter` - This line extends `WebSecurityConfigurerAdapter`, which is a convenience class that allows customization to both WebSecurity and HttpSecurity. However, as of Spring Security 5, `WebSecurityConfigurerAdapter` is deprecated in favor of using `SecurityFilterChain` or directly implementing `SecurityConfigurer<DefaultSecurityFilterChain, HttpSecurity>`
 	 - **configure Method**: The  `configure(HttpSecurity httpSecurity)`  method is overridden to customize the security settings. Here's what it does:
@@ -69,7 +69,7 @@
 		       -   `anyRequest().authenticated()`  - Requires authentication for all requests.
 		       -   `formLogin()`  - Enables form-based authentication.
 		       -   `logout().permitAll()`  - Allows all users to log out.
-- [ToDoItemService](/service/ToDoItemService.java)
+- [ToDoItemService](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/service/ToDoItemService.java)
 	- **Methods**:
 	    -   `findAll`: Retrieves all to-do items from the repository and returns them as a list.
 	    -   `getItemById`: Retrieves a specific to-do item by its ID. If the item is found, it returns it wrapped in a  `ResponseEntity`  with an  `HttpStatus.OK`. Otherwise, it returns a  `ResponseEntity`  with  `HttpStatus.NOT_FOUND`.
@@ -78,24 +78,24 @@
 	    -   `updateToDoItem`: Updates an existing to-do item with new data. If the item is found, it updates its fields and saves the changes to the repository. If the item is not found, it returns  `null`.
 	- This service class is a crucial part of the application's architecture, acting as a bridge between the controller layer (which handles HTTP requests) and the repository layer (which interacts with the database). It encapsulates the business logic related to to-do items, making the application more modular and easier to maintain.
 	- The use of  `Optional`  in the  `getItemById`  method is a good practice for handling cases where a to-do item might not be found in the database. It helps in avoiding  `NullPointerException`  and makes the code more expressive and safer.
-- [BotCommands](/util/BotCommands.java)
+- [BotCommands](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/util/BotCommands.java)
 	- *Package*: com.springboot.MyTodoList.util;
 	- **Enum Declaration**:  `public enum BotCommands {...}`  - This line declares an enumeration named  `BotCommands`. Enumerations in Java are a type of class that represents a group of constants (variables that never change). They are used when you know all possible values at compile time, such as days of the week, states, and in this case, bot commands.
 	- **Enum Constants**: The enumeration defines four constants:  `START_COMMAND`,  `HIDE_COMMAND`,  `TODO_LIST`, and  `ADD_ITEM`. Each of these constants represents a specific command that the bot can understand.
 	-  **Constructor**:  `BotCommands(String enumCommand) {...}`  - This is the constructor for the enumeration. It takes a  `String`  parameter named  `enumCommand`  and assigns it to the  `command`  field. This constructor is called when the enum constants are created.
-- [BotHelper](/util/BotHelper.java)
+- [BotHelper](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/util/BotHelper.java)
 	- *Package* com.springboot.MyTodoList.util;
 	- **sendMessageToTelegram Method**: This static method is designed to send a message to a specific Telegram chat. It takes three parameters:
 	    -   `Long chatId`: The ID of the chat where the message should be sent.
 	    -   `String text`: The text of the message to be sent.
 	    -   `TelegramLongPollingBot bot`: An instance of  `TelegramLongPollingBot`  that is used to execute the message sending operation.
- - [BotLabels](/util/BotLabels.java)
+ - [BotLabels](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/util/BotLabels.java)
 	 - *Package*: com.springboot.MyTodoList.util;
 	 - **Enum Declaration**:  `public enum BotLabels {...}`  - This line declares an enumeration named  `BotLabels`. Enumerations in Java are a type of class that represents a group of constants (variables that never change). They are used when you know all possible values at compile time, such as days of the week, states, and in this case, bot labels.
 	 - **Enum Constants**: The enumeration defines several constants, each representing a specific label that the bot can use. These include  `SHOW_MAIN_SCREEN`,  `HIDE_MAIN_SCREEN`,  `LIST_ALL_ITEMS`,  `ADD_NEW_ITEM`,  `DONE`,  `UNDO`,  `DELETE`,  `MY_TODO_LIST`, and  `DASH`. Each of these constants represents a specific label that the bot can display or use in its interactions with users.
 	 - **Constructor**:  `BotLabels(String enumLabel) {...}`  - This is the constructor for the enumeration. It takes a  `String`  parameter named  `enumLabel`  and assigns it to the  `label`  field. This constructor is called when the enum constants are created.
 	 - **Getter Method**:  `public String getLabel() {...}`  - This method returns the string representation of the label associated with an enum constant. It's a typical getter method that allows access to the  `label`  field.
- - [BotMessages](/util/BotMessages.java)
+ - [BotMessages](/MtdrSpring/backend/src/main/java/com/springboot/MyTodoList/util/BotMessages.java)
 	 - *Package*: com.springboot.MyTodoList.util;
 	 - **Enum Declaration**:  `public enum BotMessages {...}`  - This line declares an enumeration named  `BotMessages`. Enumerations in Java are a type of class that represents a group of constants (variables that never change). They are used when you know all possible values at compile time, such as days of the week, states, and in this case, bot messages.
 	 - 	  **Enum Constants**: The enumeration defines several constants, each representing a specific message that the bot can use. These include  `HELLO_MYTODO_BOT`,  `BOT_REGISTERED_STARTED`,  `ITEM_DONE`,  `ITEM_UNDONE`,  `ITEM_DELETED`,  `TYPE_NEW_TODO_ITEM`,  `NEW_ITEM_ADDED`, and  `BYE`. Each of these constants represents a specific message that the bot can display or use in its interactions with users.
