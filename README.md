@@ -2,7 +2,6 @@
 A repository for full stack Cloud Native applications with a React JS frontend and various backends (Java, Python, DotNet, and so on) on the Oracle Cloud Infrastructure.
 # TO RUN
 ```
-git clone -b main --single-branch https://github.com/BoJavs-svg/OracleJavaBot25.git
 ```
 
 ```
