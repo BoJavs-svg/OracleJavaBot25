@@ -1,7 +1,10 @@
 package com.springboot.MyTodoList.controller;
 
+import static org.mockito.ArgumentMatchers.booleanThat;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,18 +24,65 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.model.TelegramUser;
+
 import com.springboot.MyTodoList.service.ToDoItemService;
+import com.springboot.MyTodoList.service.TelegramUserService;
+
+
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 
+import java.util.Map;
+import java.util.HashMap;
+
+
 public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	private static final Logger logger = LoggerFactory.getLogger(ToDoItemBotController.class);
-	private ToDoItemService toDoItemService;
-	private String botName;
 
+	private ToDoItemService toDoItemService;
+	private TelegramUserService telegramUserService;
+
+	private String botName;
+	private Map<Long, String> userStates = new HashMap<>();
+
+	private void promptForUserInformation(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter your name:");
+		try {
+			execute(message);
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+		userStates.put(chatId, "WAITING_FOR_NAME");
+	}
+	
+	private void promptForRole(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please select your role:");
+	
+		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		List<KeyboardRow> keyboard = new ArrayList<>();
+		KeyboardRow row = new KeyboardRow();
+		row.add("Manager");
+		row.add("Developer");
+		keyboard.add(row);
+		keyboardMarkup.setKeyboard(keyboard);
+		message.setReplyMarkup(keyboardMarkup);
+	
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_ROLE");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}		
+	}
+	
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
 		super(botToken);
 		logger.info("Bot Token: " + botToken);
@@ -40,18 +90,30 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		this.toDoItemService = toDoItemService;
 		this.botName = botName;
 	}
-
 	@Override
 	public void onUpdateReceived(Update update) {
-
 		if (update.hasMessage() && update.getMessage().hasText()) {
 
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
+			TelegramUser telegramUser = null; // Declare telegramUser here
 
-			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
+                telegramUser = new TelegramUser();
+                telegramUser.setName(messageTextFromTelegram);
+                telegramUser.setAccount(chatId);
+				promptForRole(chatId);
+
+            } else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
+				telegramUser.setRol(messageTextFromTelegram);
+				userStates.put(chatId,null);
+
+            }else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-
+				 userStates.put(chatId, null);
+				 if (!telegramUserService.userExists(chatId)) {
+	                promptForUserInformation(chatId);
+				}
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
@@ -83,6 +145,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (TelegramApiException e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
+
 
 			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
