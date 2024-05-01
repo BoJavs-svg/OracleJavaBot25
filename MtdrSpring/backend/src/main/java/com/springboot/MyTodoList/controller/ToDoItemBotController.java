@@ -113,15 +113,17 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				telegramUserService.saveTelegramUser(telegramUser);
 			} else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-			
 				SendMessage message = new SendMessage();
 				message.setChatId(chatId);
-				ResponseEntity<Boolean> response = userExists(chatId);
-				message.setText("Si corrio jaja");
 				try {
+					ResponseEntity<Boolean> response = userExists(chatId);
+				} catch (Exception e) {
+					try{
+					message.setText(e.getLocalizedMessage());;
 					execute(message);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
+					}catch(TelegramApiException te){
+						logger.error(e.getLocalizedMessage(), e);
+					}
 				}	
 				
 				// if (!userExists(chatId).getBody()) {
@@ -373,6 +375,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	//TelegramUSER
 	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
 		Boolean flag = false;
+		
 		try {
 			flag = telegramUserService.userExists(chatId);
 			return new ResponseEntity<>(flag, HttpStatus.OK);
