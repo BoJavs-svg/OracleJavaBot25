@@ -99,56 +99,53 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			TelegramUser telegramUser = null; // Declare telegramUser here
 
 			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
-                telegramUser = new TelegramUser();
-                telegramUser.setName(messageTextFromTelegram);
-                telegramUser.setAccount(chatId);
+				telegramUser = new TelegramUser();
+				telegramUser.setName(messageTextFromTelegram);
+				telegramUser.setAccount(chatId);
 				promptForRole(chatId);
-
-            } else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
+			} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
 				telegramUser.setRol(messageTextFromTelegram);
-				userStates.put(chatId,null);
+				userStates.put(chatId, null);
 				telegramUserService.saveTelegramUser(telegramUser);
-
-            }else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+			} else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-				 userStates.put(chatId, null);
-				 if (!telegramUserService.userExists(chatId)) {
-	                promptForUserInformation(chatId);
-				}else{
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
-
-				// first row
-				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// Add the first row to the keyboard
-				keyboard.add(row);
-
-				// second row
-				row = new KeyboardRow();
-				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				keyboard.add(row);
-
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
-
-				// Add the keyboard markup
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
-
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
+				userStates.put(chatId, null);
+				if (!telegramUserService.userExists(chatId)) {
+					promptForUserInformation(chatId);
+				} else {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+			
+					ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+					List<KeyboardRow> keyboard = new ArrayList<>();
+			
+					// first row
+					KeyboardRow row = new KeyboardRow();
+					row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+					row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+					// Add the first row to the keyboard
+					keyboard.add(row);
+			
+					// second row
+					row = new KeyboardRow();
+					row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+					keyboard.add(row);
+			
+					// Set the keyboard
+					keyboardMarkup.setKeyboard(keyboard);
+			
+					// Add the keyboard markup
+					messageToTelegram.setReplyMarkup(keyboardMarkup);
+			
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
 				}
-
-
-			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
+		}else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
