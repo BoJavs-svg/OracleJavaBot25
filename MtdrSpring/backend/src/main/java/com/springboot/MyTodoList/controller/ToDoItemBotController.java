@@ -131,7 +131,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText("Usuario creado");
+				messageToTelegram.setText(entity.getBody().toString());
 				execute(messageToTelegram);
 				userStates.put(chatId, null);
 			} catch (Exception e) {
