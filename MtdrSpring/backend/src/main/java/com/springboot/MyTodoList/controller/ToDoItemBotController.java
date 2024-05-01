@@ -114,15 +114,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				telegramUserService.saveTelegramUser(telegramUser);
 			} else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-				SendMessage message = new SendMessage();
-				message.setChatId(chatId);
-				message.setText("Ayudanos dios nmms");
-				try{
-					execute(message);
-				}catch(TelegramApiException e){
-					logger.error(e.getLocalizedMessage(), e);
-				}
-				ResponseEntity<Boolean> response = userExists(chatId);				
+				
+				ResponseEntity<Boolean> response = userExists(chatId);
+
 				// if (!userExists(chatId).getBody()) {
 				// 	promptForUserInformation(chatId);
 				// } else {
@@ -373,13 +367,22 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
 		Boolean flag = false;
 		System.out.println("Dios intento 2");
-		try {
-			flag = telegramUserService.userExists(chatId);
-			return new ResponseEntity<>(flag, HttpStatus.OK);
-		} catch (Exception e) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Ayudanos dios nmms");
+		try{
+			execute(message);
+		}catch(TelegramApiException e){
 			logger.error(e.getLocalizedMessage(), e);
-			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		}
+		return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
+		// try {
+		// 	flag = telegramUserService.userExists(chatId);
+		// 	return new ResponseEntity<>(flag, HttpStatus.OK);
+		// } catch (Exception e) {
+		// 	logger.error(e.getLocalizedMessage(), e);
+		// 	return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
+		// }
 
 	}
 
