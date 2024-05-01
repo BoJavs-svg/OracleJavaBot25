@@ -75,27 +75,25 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			try{
 				execute(message);
 			}catch(TelegramApiException e){
-				logger.error(e.getLocalizedMessage(), e);
+				logger.error("Error en mensaje recibido");
 			}
 
-			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
-				telegramUser = new TelegramUser();
-				telegramUser.setName(messageTextFromTelegram);
-				telegramUser.setAccount(chatId);
-				promptForRole(chatId);
-			} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
-				telegramUser.setRol(messageTextFromTelegram);
-				userStates.put(chatId, null);
-				telegramUserService.saveTelegramUser(telegramUser);
-			// } else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+			// if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 			// 		|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-			}else if (messageTextFromTelegram.equals("/test")){
+			if (messageTextFromTelegram.equals("/test")){
 				logger.error("ENTRO AL IF");
+				message = new SendMessage();
+				message.setChatId(chatId);
+				message.setText("IF");
+				try{
+					execute(message);
+				}catch(TelegramApiException e){
+					logger.error("Error en IF");
+				}
 				ResponseEntity<Boolean> response = findIfExists(chatId);
 				logger.error(Boolean.toString(response.getBody()));
 				logger.error("CORRIO LA FUNCION");
-
-				// if (!userExists(chatId).getBody()) {
+				/* // if (!userExists(chatId).getBody()) {
 				// 	promptForUserInformation(chatId);
 				// } else {
 				// 	SendMessage messageToTelegram = new SendMessage();
@@ -129,8 +127,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				// 	} catch (TelegramApiException e) {
 				// 		logger.error(e.getLocalizedMessage(), e);
 				// 	}
-				// }
-		}else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
+				// } */
+		}if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
+			telegramUser = new TelegramUser();
+			telegramUser.setName(messageTextFromTelegram);
+			telegramUser.setAccount(chatId);
+			promptForRole(chatId);
+		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
+			telegramUser.setRol(messageTextFromTelegram);
+			userStates.put(chatId, null);
+			telegramUserService.saveTelegramUser(telegramUser);
+		}
+		/* else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
@@ -280,7 +288,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
-			}
+			} */
 		}
 	}
 
@@ -289,7 +297,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		return botName;
 	}
 
-	// GET /todolist
+	/* // GET /todolist
 	public List<ToDoItem> getAllToDoItems() { 
 		return toDoItemService.findAll();
 	}
@@ -340,7 +348,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 	}
 
-
+ */
 	//TelegramUSER
 	public ResponseEntity<Boolean> findIfExists(@PathVariable("chatId") long chatId){
 		logger.error("ENTRO A LA FUNCION");
@@ -351,7 +359,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		try{
 			execute(message);
 		}catch(TelegramApiException e){
-			logger.error(e.getLocalizedMessage(), e);
+			logger.error("ERROR ADENTRO DE LA FUNCION");
 		}
 		return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		// try {
