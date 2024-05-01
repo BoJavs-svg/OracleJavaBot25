@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.controller;
 
 import static org.mockito.ArgumentMatchers.booleanThat;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -115,17 +116,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				SendMessage message = new SendMessage();
 				message.setChatId(chatId);
-				try {
-					ResponseEntity<Boolean> response = userExists(chatId);
-				} catch (Exception e) {
-					try{
-					message.setText(e.getLocalizedMessage());;
+				message.setText("Ayudanos dios nmms");
+				try{
 					execute(message);
-					}catch(TelegramApiException te){
-						logger.error(e.getLocalizedMessage(), e);
-					}
-				}	
-				
+				}catch(TelegramApiException e){
+					logger.error(e.getLocalizedMessage(), e);
+				}
+				ResponseEntity<Boolean> response = userExists(chatId);				
 				// if (!userExists(chatId).getBody()) {
 				// 	promptForUserInformation(chatId);
 				// } else {
@@ -375,7 +372,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	//TelegramUSER
 	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
 		Boolean flag = false;
-		
 		try {
 			flag = telegramUserService.userExists(chatId);
 			return new ResponseEntity<>(flag, HttpStatus.OK);
