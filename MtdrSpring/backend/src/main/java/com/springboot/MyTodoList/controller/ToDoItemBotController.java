@@ -115,16 +115,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				SendMessage message = new SendMessage();
 				message.setChatId(chatId);
-				message.setText("Before it gets fucked lol");
-				try {
-					execute(message);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}	
-				message = new SendMessage();
-				message.setChatId(chatId);
 				ResponseEntity<Boolean> response = userExists(chatId);
-				message.setText(Boolean.toString(response.getBody()));
+				message.setText("Si corrio jaja");
 				try {
 					execute(message);
 				} catch (TelegramApiException e) {
