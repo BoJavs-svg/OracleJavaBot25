@@ -10,13 +10,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 @Service
 public class TelegramUserService {
 
     @Autowired
     private TelegramUserRepository telegramUserRepository;    
     //Save user
-    
+    @Transactional
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
         return telegramUserRepository.save(telegramUser);
     }
