@@ -122,6 +122,41 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}	
 				
+				if (!userExists(chatId).getBody()) {
+					promptForUserInformation(chatId);
+				} else {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+			
+					ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+					List<KeyboardRow> keyboard = new ArrayList<>();
+			
+					// first row
+					KeyboardRow row = new KeyboardRow();
+					row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+					row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+					// Add the first row to the keyboard
+					keyboard.add(row);
+			
+					// second row
+					row = new KeyboardRow();
+					row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+					keyboard.add(row);
+			
+					// Set the keyboard
+					keyboardMarkup.setKeyboard(keyboard);
+			
+					// Add the keyboard markup
+					messageToTelegram.setReplyMarkup(keyboardMarkup);
+			
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
 		}else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
@@ -325,6 +360,19 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		Boolean flag = false;
 		try {
 			flag = toDoItemService.deleteToDoItem(id);
+			return new ResponseEntity<>(flag, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error(e.getLocalizedMessage(), e);
+			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
+		}
+	}
+
+
+	//TelegramUSER
+	public ResponseEntity<Boolean> userExists(@PathVariable("id") long id){
+		Boolean flag = false;
+		try {
+			flag = telegramUserService.userExists(id);
 			return new ResponseEntity<>(flag, HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
