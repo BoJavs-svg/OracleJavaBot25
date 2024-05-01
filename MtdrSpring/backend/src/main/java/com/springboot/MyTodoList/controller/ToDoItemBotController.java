@@ -77,7 +77,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			}catch(TelegramApiException e){
 				logger.error("Error en mensaje recibido");
 			}
-
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
@@ -124,7 +123,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error(e.getLocalizedMessage(), e);
 					}
 				}
-		}if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
+		}else if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 			telegramUser = new TelegramUser();
 			telegramUser.setName(messageTextFromTelegram);
 			telegramUser.setAccount(chatId);
