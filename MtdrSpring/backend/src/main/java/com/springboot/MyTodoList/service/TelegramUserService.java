@@ -16,11 +16,12 @@ public class TelegramUserService {
     @Autowired
     private TelegramUserRepository telegramUserRepository;    
     //Save user
+    
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
+        
         return telegramUserRepository.save(telegramUser);
     }
     public boolean userExists(Long accountID){
-        System.out.println("service.userExists...............................................................");
         return telegramUserRepository.existsByAccount(accountID);
     }
     public Optional<TelegramUser> findById(Long id){
