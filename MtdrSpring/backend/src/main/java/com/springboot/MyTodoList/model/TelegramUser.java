@@ -3,17 +3,17 @@ package com.springboot.MyTodoList.model;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "telegramUser")
+@Table(name = "TELEGRAMUSER")
 public class TelegramUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
      Long id;
-    @Column(name = "name")
+    @Column(name = "NAME")
      String name;
-     @Column(name = "account")
+     @Column(name = "ACCOUNT")
      Long account;
-     @Column(name = "rol")
+     @Column(name = "ROL")
      String rol;
     
      //Constructor
