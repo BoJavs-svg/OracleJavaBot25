@@ -80,14 +80,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
-				 message = new SendMessage();
-				message.setChatId(chatId);
-				message.setText(Boolean.toString(response.getBody()));
-				try{
-					execute(message);
-				}catch(TelegramApiException e){
-					logger.error("ERROR");
-				}
 				if (!response.getBody()) {
 					promptForUserInformation(chatId);
 				} else {
@@ -129,9 +121,27 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			telegramUser.setAccount(chatId);
 			promptForRole(chatId);
 		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
-			telegramUser.setRol(messageTextFromTelegram);
-			userStates.put(chatId, null);
-			telegramUserService.saveTelegramUser(telegramUser);
+			try {
+
+				telegramUser.setRol(messageTextFromTelegram);
+				userStates.put(chatId, null);
+				ResponseEntity entity = saveUser(telegramUser);
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Usuario creado");
+
+				execute(messageToTelegram);
+			} catch (Exception e) {
+				logger.error(e.getLocalizedMessage(), e);
+				try{
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Error al crear usuario: "+ e.getLocalizedMessage());
+	
+					execute(messageToTelegram);
+				}catch(Exception t){}
+			}
+
 		}
 		/* else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
@@ -356,6 +366,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 
 	}
+	public  ResponseEntity saveUser(@RequestBody TelegramUser telegramUser) throws Exception {
+		TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("location", "" + tu.getId());
+		responseHeaders.set("Access-Control-Expose-Headers", "location");
+		return ResponseEntity.ok().headers(responseHeaders).build();
+	}
+
 	//Prompts
 	public void promptForUserInformation(long chatId) {
 		SendMessage message = new SendMessage();
