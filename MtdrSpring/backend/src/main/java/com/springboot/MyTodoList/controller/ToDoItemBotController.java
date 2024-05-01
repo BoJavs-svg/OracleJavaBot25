@@ -107,13 +107,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
             } else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
 				telegramUser.setRol(messageTextFromTelegram);
 				userStates.put(chatId,null);
+				telegramUserService.saveTelegramUser(telegramUser);
 
             }else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				 userStates.put(chatId, null);
 				 if (!telegramUserService.userExists(chatId)) {
 	                promptForUserInformation(chatId);
-				}
+				}else{
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
