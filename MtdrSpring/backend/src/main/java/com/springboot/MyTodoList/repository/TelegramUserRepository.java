@@ -13,5 +13,5 @@ import javax.transaction.Transactional;
 @Transactional
 @EnableTransactionManagement
 public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
-
+    boolean existsByAccount(Long accountID);
 }

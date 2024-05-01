@@ -20,8 +20,7 @@ public class TelegramUserService {
         return telegramUserRepository.save(telegramUser);
     }
     public boolean userExists(Long accountID){
-        Optional<TelegramUser> userOptional = telegramUserRepository.findById(accountID);
-        return userOptional.isPresent();
+        return telegramUserRepository.existsByAccount(accountID);
     }
     public Optional<TelegramUser> findById(Long id){
         return telegramUserRepository.findById(id);
