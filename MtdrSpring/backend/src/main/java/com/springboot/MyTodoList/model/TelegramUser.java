@@ -8,7 +8,7 @@ public class TelegramUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-     Long id;
+     Long ID;
     @Column(name = "NAME")
      String name;
      @Column(name = "ACCOUNT")
@@ -21,7 +21,7 @@ public class TelegramUser {
 
      }
      public TelegramUser(Long id, String name, Long account, String rol){
-        this.id = id;
+        this.ID = id;
         this.name = name;
         this.account = account;
         this.rol = rol;
@@ -29,11 +29,11 @@ public class TelegramUser {
 
     //Getter and setters
      public Long getId() {
-        return id;
+        return ID;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.ID = id;
     }
 
     public String getName() {
@@ -64,7 +64,7 @@ public class TelegramUser {
     @Override
     public String toString(){
         return "TelegramUser{" +
-        "id=" + id +
+        "id=" + ID +
         ", name='" + name + '\'' +
         ", account='" + account + '\'' +
         ", rol='" + rol + '\'' +

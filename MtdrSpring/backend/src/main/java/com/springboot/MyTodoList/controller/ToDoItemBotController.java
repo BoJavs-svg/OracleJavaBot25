@@ -126,21 +126,16 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			try {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
-				userStates.put(chatId, null);
-				ResponseEntity entity = saveUser(telegramUser,chatId);
+				ResponseEntity entity = saveUser(telegramUser,chatId);		
+				
+				
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Usuario creado");
 				execute(messageToTelegram);
+				userStates.put(chatId, null);
 			} catch (Exception e) {
 				logger.error(e.getLocalizedMessage(), e);
-				try{
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Error al crear usuario: "+ e.getLocalizedMessage());
-	
-					execute(messageToTelegram);
-				}catch(Exception t){}
 			}
 
 		}
@@ -163,22 +158,22 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 
 	}
-	public  ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) throws Exception {
-		try{
+	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
+		try {
+			TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
 			SendMessage messageToTelegram = new SendMessage();
 			messageToTelegram.setChatId(chatId);
-			messageToTelegram.setText("telegramUser: "+ telegramUser.toString());
-
+			messageToTelegram.setText("telegramUser: " + tu.toString());
 			execute(messageToTelegram);
-		}catch(Exception t){}
-		TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
-		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("location", "" + tu.getId());
-		responseHeaders.set("Access-Control-Expose-Headers", "location");
-		return ResponseEntity.ok().headers(responseHeaders).build();
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.set("location", "" + tu.getId());
+			responseHeaders.set("Access-Control-Expose-Headers", "location");
+			return ResponseEntity.ok().headers(responseHeaders).build();
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving user: " + e.getMessage());
+		}
 	}
-
+	
 	//Prompts
 	public void promptForUserInformation(long chatId) {
 		SendMessage message = new SendMessage();
