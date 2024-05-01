@@ -97,6 +97,15 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			long chatId = update.getMessage().getChatId();
 			TelegramUser telegramUser = null; // Declare telegramUser here
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
+			SendMessage message = new SendMessage();
+			message.setChatId(chatId);
+			message.setText("Matate por decir " + messageTextFromTelegram + "mr." + chatId);
+			try {
+				execute(message);
+			} catch (TelegramApiException e) {
+				logger.error(e.getLocalizedMessage(), e);
+			}	
+
 			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 				telegramUser = new TelegramUser();
 				telegramUser.setName(messageTextFromTelegram);
@@ -110,14 +119,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				logger.info("Message type start");
 				userStates.put(chatId, null);
-				SendMessage message = new SendMessage();
-				message.setChatId(chatId);
-				message.setText("Matate :)");
-				try {
-					execute(message);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}	
 				if (!telegramUserService.userExists(chatId)) {
 					promptForUserInformation(chatId);
 				} else {
