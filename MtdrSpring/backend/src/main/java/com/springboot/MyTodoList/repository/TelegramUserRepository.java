@@ -7,16 +7,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.transaction.Transactional;
+import java.util.List;
+
+// import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.Query;
 
 @Repository
-@Transactional
+// @Transactional
 @EnableTransactionManagement
 public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
     boolean existsByAccount(Long accountID);
 
     @Query(value = "SELECT * FROM TELEGRAMUSER", nativeQuery = true)
-    void getAllUsers();
+    List<TelegramUser> getAllUsers();
 
 }
