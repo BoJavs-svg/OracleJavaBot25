@@ -63,7 +63,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		if (update.hasMessage() && update.getMessage().hasText()) {
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
-			TelegramUser telegramUser = null; // Declare telegramUser here
 			if (!userStates.containsKey(chatId)) {
          		   userStates.put(chatId, null); // Initialize state for new user
         		}
@@ -115,7 +114,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 				}
 		}else if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
-			telegramUser = new TelegramUser();
+			TelegramUser telegramUser = new TelegramUser();
 			telegramUser.setName(messageTextFromTelegram);
 			telegramUser.setAccount(chatId);
 			userMap.put(chatId,telegramUser);
@@ -123,7 +122,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
 			try {
-				telegramUser = userMap.get(chatId);
+				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
 				userStates.put(chatId, null);
 				ResponseEntity entity = saveUser(telegramUser);
