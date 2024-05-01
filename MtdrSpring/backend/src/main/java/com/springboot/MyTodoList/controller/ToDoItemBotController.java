@@ -151,10 +151,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		Boolean flag = false;
 		try {
 			flag = telegramUserService.userExists(chatId);
-			return new ResponseEntity<>(flag, HttpStatus.OK);
+			return new ResponseEntity<>(true, HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
-			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
 		}
 
 	}
