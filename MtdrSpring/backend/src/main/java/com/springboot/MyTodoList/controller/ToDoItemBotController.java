@@ -365,6 +365,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	//TelegramUSER
 	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+		logger.error("NO SE ENVIO EL PUTO MENSAJE");
+
 		Boolean flag = false;
 		System.out.println("Dios intento 2");
 		SendMessage message = new SendMessage();
@@ -374,13 +382,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			execute(message);
 		}catch(TelegramApiException e){
 			logger.error(e.getLocalizedMessage(), e);
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
-			logger.error("NO SE ENVIO EL PUTO MENSAJE");
 		}
 		return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		// try {
