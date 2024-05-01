@@ -49,8 +49,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	private String botName;
 	private Map<Long, String> userStates = new HashMap<>();
-
-	
+	private Map<Long, TelegramUser> userMap = new HashMap<>();	
 	
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
 		super(botToken);
@@ -119,10 +118,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			telegramUser = new TelegramUser();
 			telegramUser.setName(messageTextFromTelegram);
 			telegramUser.setAccount(chatId);
+			userMap.put(chatId,telegramUser);
 			promptForRole(chatId);
+
 		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
 			try {
-
+				telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
 				userStates.put(chatId, null);
 				ResponseEntity entity = saveUser(telegramUser);

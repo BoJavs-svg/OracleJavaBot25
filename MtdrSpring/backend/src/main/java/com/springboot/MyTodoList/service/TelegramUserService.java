@@ -18,7 +18,6 @@ public class TelegramUserService {
     //Save user
     
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
-        
         return telegramUserRepository.save(telegramUser);
     }
     public boolean userExists(Long accountID){
