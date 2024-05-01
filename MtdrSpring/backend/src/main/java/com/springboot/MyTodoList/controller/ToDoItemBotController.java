@@ -93,11 +93,17 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	@Override
 	public void onUpdateReceived(Update update) {
 		if (update.hasMessage() && update.getMessage().hasText()) {
-
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
 			TelegramUser telegramUser = null; // Declare telegramUser here
-
+			SendMessage message = new SendMessage();
+			message.setChatId(chatId);
+			message.setText("Matate :)");
+			try {
+				execute(message);
+			} catch (TelegramApiException e) {
+				logger.error(e.getLocalizedMessage(), e);
+			}	
 			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 				telegramUser = new TelegramUser();
 				telegramUser.setName(messageTextFromTelegram);
