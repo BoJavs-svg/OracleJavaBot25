@@ -1,8 +1,15 @@
 package com.springboot.MyTodoList.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+// import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -20,6 +27,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.model.SprintCreationState;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.service.ToDoItemService;
 import com.springboot.MyTodoList.util.BotCommands;
@@ -89,48 +98,94 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
-
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
-
-				// 1: title
-				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.SPRINT_TITLE.getLabel());
-				keyboard.add(row);
-
-				//2: status
-				row = new KeyboardRow();
-				row.add(BotLabels.SPRINT_STATUS.getLabel());
-				keyboard.add(row);
-
-				// 3: Start date
-				row = new KeyboardRow();
-				row.add(BotLabels.SPRINT_START_D.getLabel());
-				keyboard.add(row);
-
-				// 4: End date
-				row = new KeyboardRow();
-				row.add(BotLabels.SPRINT_END_D.getLabel());
-				keyboard.add(row);
-
-				// 5: Team ID
-				row = new KeyboardRow();
-				row.add(BotLabels.SPRINT_TEAMID.getLabel());
-				keyboard.add(row);				
-
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
-
-				// Add the keyboard markup
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
-
+				messageToTelegram.setText("Create new sprint. Please provide the following details:");
+			
 				try {
 					execute(messageToTelegram);
 				} catch (TelegramApiException e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
+				// Definir un estado inicial para el proceso de creación del sprint
+				SprintCreationState sprintCreationState = SprintCreationState.WAITING_FOR_TITLE;
+
+				// Variables para almacenar los parámetros del sprint
+				String title = "";
+				String status = "";
+				Date startDate = null;
+				Date endDate = null;
+				int teamID = 0;
+
+				// Procesar los mensajes entrantes para obtener los parámetros del sprint
+				// El bucle continuará hasta que se hayan recibido todos los parámetros necesarios
+				while (sprintCreationState != SprintCreationState.SPRINT_CREATED) {
+					// Recibir el siguiente mensaje del usuario
+					// Aquí deberías implementar la lógica para recibir el mensaje del usuario (puedes usar el mismo método onUpdateReceived)
+
+					// Dependiendo del estado actual, procesar el mensaje recibido
+					switch (sprintCreationState) {
+						case WAITING_FOR_TITLE:
+							// Guardar el título del sprint del mensaje recibido
+							title = messageTextFromTelegram;
+							// Actualizar el estado para esperar el siguiente parámetro
+							sprintCreationState = SprintCreationState.WAITING_FOR_STATUS;
+							break;
+						case WAITING_FOR_STATUS:
+							// Guardar el estado del sprint del mensaje recibido
+							status = messageTextFromTelegram;
+							sprintCreationState = SprintCreationState.WAITING_FOR_START_DATE;
+							break;
+						case WAITING_FOR_START_DATE:
+							// Convertir el mensaje recibido en una fecha y guardarla como la fecha de inicio del sprint
+							String stringStartDate = messageTextFromTelegram;
+							 SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
+							try {
+								Date date = dateStartDate.parse(stringStartDate);
+								// System.out.println("Fecha convertida: " + date);
+								startDate = date;
+							} catch (ParseException e) {
+								System.out.println("Error al convertir String a Date: " + e.getMessage());
+							}
+							sprintCreationState = SprintCreationState.WAITING_FOR_END_DATE;
+							break;
+						case WAITING_FOR_END_DATE:
+							// Convertir el mensaje recibido en una fecha y guardarla como la fecha de inicio del sprint
+							String stringEndDate = messageTextFromTelegram;
+							 SimpleDateFormat dateEndDate = new SimpleDateFormat("dd-MM-yyyy");
+							try {
+								Date date = dateEndDate.parse(stringEndDate);
+								// System.out.println("Fecha convertida: " + date);
+								startDate = date;
+							} catch (ParseException e) {
+								System.out.println("Error al convertir String a Date: " + e.getMessage());
+							}
+							sprintCreationState = SprintCreationState.WAITING_FOR_TEAM_ID;
+							break;
+						case WAITING_FOR_TEAM_ID:
+							// Convertir el mensaje recibido en un número y guardarlo como el team ID del sprint
+							teamID = Integer.parseInt(messageTextFromTelegram);
+							// Actualizar el estado para indicar que se han recibido todos los parámetros necesarios
+							sprintCreationState = SprintCreationState.SPRINT_CREATED;
+							break;
+						case SPRINT_CREATED:
+							break;
+					}
+				}
+
+				// Una vez que se hayan recibido todos los parámetros, crear el sprint y guardarlo en la base de datos
+				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+				// Llamar al método para guardar el sprint en la base de datos
+				// toDoItemService.createSprint(newSprint);
+
+				// Enviar un mensaje al usuario confirmando que el sprint se ha creado correctamente
+				SendMessage confirmationMessage = new SendMessage();
+				confirmationMessage.setChatId(chatId);
+				confirmationMessage.setText("The sprint has been created successfully.");
+				try {
+					execute(confirmationMessage);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
 			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
@@ -246,7 +301,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			} else if (messageTextFromTelegram.equals(BotCommands.ADD_ITEM.getCommand())
+			} else if (messageTextFromTelegram.equals(BotCommands.ADD_ITEM.getCommand()) // Basarme en esta
 					|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_ITEM.getLabel())) {
 				try {
 					SendMessage messageToTelegram = new SendMessage();
