@@ -99,7 +99,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
 			message.setChatId(chatId);
-			message.setText("Matate por decir " + messageTextFromTelegram + "mr." + chatId);
+			message.setText("Matate por decir " + messageTextFromTelegram + "mr. " + chatId + "ur state is " + userStates.get(chatId) );
 			try {
 				execute(message);
 			} catch (TelegramApiException e) {
