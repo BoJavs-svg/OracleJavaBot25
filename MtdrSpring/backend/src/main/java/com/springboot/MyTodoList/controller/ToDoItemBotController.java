@@ -127,8 +127,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
 				ResponseEntity entity = saveUser(telegramUser,chatId);		
-				
-
+			
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(entity.getBody().toString());
@@ -161,10 +160,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
 		try {
 			TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
-			SendMessage messageToTelegram = new SendMessage();
-			messageToTelegram.setChatId(chatId);
-			messageToTelegram.setText("telegramUser: " + tu.toString());
-			execute(messageToTelegram);
+
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", "" + tu.getId());
 			responseHeaders.set("Access-Control-Expose-Headers", "location");
