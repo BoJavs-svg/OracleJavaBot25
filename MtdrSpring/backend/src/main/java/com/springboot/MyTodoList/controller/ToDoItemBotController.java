@@ -78,56 +78,52 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				logger.error("Error en mensaje recibido");
 			}
 
-			// if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
-			// 		|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-			if (messageTextFromTelegram.equals("/test")){
-				logger.error("ENTRO AL IF");
-				message = new SendMessage();
+			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
+				ResponseEntity<Boolean> response = findIfExists(chatId);
+				 message = new SendMessage();
 				message.setChatId(chatId);
-				message.setText("IF");
+				message.setText(Boolean.toString(response.getBody()));
 				try{
 					execute(message);
 				}catch(TelegramApiException e){
-					logger.error("Error en IF");
+					logger.error("ERROR");
 				}
-				ResponseEntity<Boolean> response = findIfExists(chatId);
-				logger.error(Boolean.toString(response.getBody()));
-				logger.error("CORRIO LA FUNCION");
-				/* // if (!userExists(chatId).getBody()) {
-				// 	promptForUserInformation(chatId);
-				// } else {
-				// 	SendMessage messageToTelegram = new SendMessage();
-				// 	messageToTelegram.setChatId(chatId);
-				// 	messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+				if (!response.getBody()) {
+					promptForUserInformation(chatId);
+				} else {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 			
-				// 	ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				// 	List<KeyboardRow> keyboard = new ArrayList<>();
+					ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+					List<KeyboardRow> keyboard = new ArrayList<>();
 			
-				// 	// first row
-				// 	KeyboardRow row = new KeyboardRow();
-				// 	row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				// 	row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// 	// Add the first row to the keyboard
-				// 	keyboard.add(row);
+					// first row
+					KeyboardRow row = new KeyboardRow();
+					row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+					row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+					// Add the first row to the keyboard
+					keyboard.add(row);
 			
-				// 	// second row
-				// 	row = new KeyboardRow();
-				// 	row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				// 	row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				// 	keyboard.add(row);
+					// second row
+					row = new KeyboardRow();
+					row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+					keyboard.add(row);
 			
-				// 	// Set the keyboard
-				// 	keyboardMarkup.setKeyboard(keyboard);
+					// Set the keyboard
+					keyboardMarkup.setKeyboard(keyboard);
 			
-				// 	// Add the keyboard markup
-				// 	messageToTelegram.setReplyMarkup(keyboardMarkup);
+					// Add the keyboard markup
+					messageToTelegram.setReplyMarkup(keyboardMarkup);
 			
-				// 	try {
-				// 		execute(messageToTelegram);
-				// 	} catch (TelegramApiException e) {
-				// 		logger.error(e.getLocalizedMessage(), e);
-				// 	}
-				// } */
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
 		}if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 			telegramUser = new TelegramUser();
 			telegramUser.setName(messageTextFromTelegram);
@@ -351,24 +347,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
  */
 	//TelegramUSER
 	public ResponseEntity<Boolean> findIfExists(@PathVariable("chatId") long chatId){
-		logger.error("ENTRO A LA FUNCION");
 		Boolean flag = false;
-		SendMessage message = new SendMessage();
-		message.setChatId(chatId);
-		message.setText("Ayudanos dios nmms");
-		try{
-			execute(message);
-		}catch(TelegramApiException e){
-			logger.error("ERROR ADENTRO DE LA FUNCION");
+		try {
+			flag = telegramUserService.userExists(chatId);
+			return new ResponseEntity<>(flag, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error(e.getLocalizedMessage(), e);
+			return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
-		// try {
-		// 	flag = telegramUserService.userExists(chatId);
-		// 	return new ResponseEntity<>(flag, HttpStatus.OK);
-		// } catch (Exception e) {
-		// 	logger.error(e.getLocalizedMessage(), e);
-		// 	return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
-		// }
 
 	}
 	//Prompts
