@@ -372,6 +372,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	//TelegramUSER
 	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
 		Boolean flag = false;
+		System.out.println("Dios intento 2");
 		try {
 			flag = telegramUserService.userExists(chatId);
 			return new ResponseEntity<>(flag, HttpStatus.OK);
