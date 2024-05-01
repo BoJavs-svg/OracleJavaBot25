@@ -374,6 +374,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			execute(message);
 		}catch(TelegramApiException e){
 			logger.error(e.getLocalizedMessage(), e);
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
+			logger.error("NO SE ENVIO EL PUTO MENSAJE");
 		}
 		return new ResponseEntity<>(flag, HttpStatus.NOT_FOUND);
 		// try {
