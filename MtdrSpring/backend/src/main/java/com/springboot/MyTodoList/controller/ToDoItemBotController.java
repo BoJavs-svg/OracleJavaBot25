@@ -161,12 +161,15 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	
 	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
 		try {
+			if (telegramUser != null) {
 			TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
-			
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", "" + tu.getId());
 			responseHeaders.set("Access-Control-Expose-Headers", "location");
-			return ResponseEntity.ok().headers(responseHeaders).build();
+            return ResponseEntity.ok().headers(responseHeaders).build();
+			}else{
+				throw new IllegalArgumentException("telegramUser cannot be null");
+			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(telegramUserService.checkTelegramUserTableExists());
 		}
