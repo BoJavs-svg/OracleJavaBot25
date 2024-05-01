@@ -96,6 +96,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
 			TelegramUser telegramUser = null; // Declare telegramUser here
+			if (!userStates.containsKey(chatId)) {
+         		   userStates.put(chatId, null); // Initialize state for new user
+        		}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
 			message.setChatId(chatId);
