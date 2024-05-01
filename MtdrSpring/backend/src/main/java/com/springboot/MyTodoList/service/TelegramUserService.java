@@ -20,7 +20,12 @@ public class TelegramUserService {
     //Save user
     @Transactional
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
-        return telegramUserRepository.save(telegramUser);
+        try {
+            return telegramUserRepository.save(telegramUser);
+        } catch (Exception e) {
+            // Rethrow the exception with a more descriptive message
+            throw new RuntimeException("Error saving TelegramUser: " + e.getMessage(), e);
+        }
     }
     public boolean userExists(Long accountID){
         return telegramUserRepository.existsByAccount(accountID);
