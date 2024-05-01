@@ -182,3 +182,10 @@ exit
 done
 # DB Setup Done
 state_set_done DB_SETUP
+
+# CREATE TABLE TODOUSER.todoitem 
+# (id NUMER GENERATED ALWAYS AS IDENTITY, 
+# description VARCHAR2(4000), 
+# creation_ts TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, 
+# done NUMBER(1,0) , PRIMARY KEY (id));
+# insert into TODOUSER.todoitm (description, done) values ('Manual item insert', 0);

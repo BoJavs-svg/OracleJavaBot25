@@ -84,6 +84,53 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
+			} else if (messageTextFromTelegram.equals(BotCommands.ADD_SPRINT.getCommand())
+					|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_SPRINT.getLabel())) {
+
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
+
+				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				List<KeyboardRow> keyboard = new ArrayList<>();
+
+				// 1: title
+				KeyboardRow row = new KeyboardRow();
+				row.add(BotLabels.SPRINT_TITLE.getLabel());
+				keyboard.add(row);
+
+				//2: status
+				row = new KeyboardRow();
+				row.add(BotLabels.SPRINT_STATUS.getLabel());
+				keyboard.add(row);
+
+				// 3: Start date
+				row = new KeyboardRow();
+				row.add(BotLabels.SPRINT_START_D.getLabel());
+				keyboard.add(row);
+
+				// 4: End date
+				row = new KeyboardRow();
+				row.add(BotLabels.SPRINT_END_D.getLabel());
+				keyboard.add(row);
+
+				// 5: Team ID
+				row = new KeyboardRow();
+				row.add(BotLabels.SPRINT_TEAMID.getLabel());
+				keyboard.add(row);				
+
+				// Set the keyboard
+				keyboardMarkup.setKeyboard(keyboard);
+
+				// Add the keyboard markup
+				messageToTelegram.setReplyMarkup(keyboardMarkup);
+
+				try {
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+
 			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
