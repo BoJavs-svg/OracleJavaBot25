@@ -127,7 +127,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
 				ResponseEntity entity = saveUser(telegramUser,chatId);		
-			
+				
+
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(entity.getBody().toString());
@@ -157,16 +158,17 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 
 	}
+	
 	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
 		try {
 			TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
-
+			
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", "" + tu.getId());
 			responseHeaders.set("Access-Control-Expose-Headers", "location");
 			return ResponseEntity.ok().headers(responseHeaders).build();
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving user: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(telegramUserService.checkTelegramUserTableExists());
 		}
 	}
 	

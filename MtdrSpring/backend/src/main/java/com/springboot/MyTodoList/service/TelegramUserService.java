@@ -13,12 +13,20 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 @Service
+@Transactional
 public class TelegramUserService {
 
     @Autowired
     private TelegramUserRepository telegramUserRepository;    
+    public String checkTelegramUserTableExists() {
+        try {
+            telegramUserRepository.getAllUsers();
+            return "TelegramUser table exists and is accessible.";
+        } catch (Exception e) {
+            return "TelegramUser table does not exist or is not accessible: " + e.getMessage();
+        }
+    }
     //Save user
-    @Transactional
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
         try {
             return telegramUserRepository.save(telegramUser);
