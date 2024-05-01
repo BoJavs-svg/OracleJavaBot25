@@ -162,14 +162,15 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	}
 	public  ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) throws Exception {
-		TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
 		try{
 			SendMessage messageToTelegram = new SendMessage();
 			messageToTelegram.setChatId(chatId);
-			messageToTelegram.setText("tu: "+ tu.toString());
+			messageToTelegram.setText("telegramUser: "+ telegramUser.toString());
 
 			execute(messageToTelegram);
 		}catch(Exception t){}
+		TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
+		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("location", "" + tu.getId());
 		responseHeaders.set("Access-Control-Expose-Headers", "location");
