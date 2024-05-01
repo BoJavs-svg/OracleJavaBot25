@@ -115,6 +115,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				try {
 					execute(message);
 				} catch (TelegramApiException e) {
+					logger.error("/start ran and you got");
 					logger.error(e.getLocalizedMessage(), e);
 				}	
 				if (!telegramUserService.userExists(chatId)) {
