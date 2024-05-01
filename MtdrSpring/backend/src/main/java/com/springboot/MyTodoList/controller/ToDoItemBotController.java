@@ -50,39 +50,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private String botName;
 	private Map<Long, String> userStates = new HashMap<>();
 
-	private void promptForUserInformation(long chatId) {
-		SendMessage message = new SendMessage();
-		message.setChatId(chatId);
-		message.setText("Please enter your name:");
-		try {
-			execute(message);
-		} catch (TelegramApiException e) {
-			logger.error(e.getLocalizedMessage(), e);
-		}	
-		userStates.put(chatId, "WAITING_FOR_NAME");
-	}
 	
-	private void promptForRole(long chatId) {
-		SendMessage message = new SendMessage();
-		message.setChatId(chatId);
-		message.setText("Please select your role:");
-	
-		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-		List<KeyboardRow> keyboard = new ArrayList<>();
-		KeyboardRow row = new KeyboardRow();
-		row.add("Manager");
-		row.add("Developer");
-		keyboard.add(row);
-		keyboardMarkup.setKeyboard(keyboard);
-		message.setReplyMarkup(keyboardMarkup);
-	
-		try {
-			execute(message);
-			userStates.put(chatId, "WAITING_FOR_ROLE");
-		} catch (TelegramApiException e) {
-			logger.error(e.getLocalizedMessage(), e);
-		}		
-	}
 	
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
 		super(botToken);
@@ -101,7 +69,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
          		   userStates.put(chatId, null); // Initialize state for new user
         		}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
-	
+			SendMessage message = new SendMessage();
+			message.setChatId(chatId);
+			message.setText("Mensaje recibido " + messageTextFromTelegram);
+			try{
+				execute(message);
+			}catch(TelegramApiException e){
+				logger.error(e.getLocalizedMessage(), e);
+			}
 
 			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 				telegramUser = new TelegramUser();
@@ -112,10 +87,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				telegramUser.setRol(messageTextFromTelegram);
 				userStates.put(chatId, null);
 				telegramUserService.saveTelegramUser(telegramUser);
-			} else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
-				
-				ResponseEntity<Boolean> response = userExists(chatId);
+			// } else if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
+			// 		|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
+			}else if (messageTextFromTelegram.equals("/test")){
+				logger.error("ENTRO AL IF");
+				ResponseEntity<Boolean> response = findIfExists(chatId);
+				logger.error(Boolean.toString(response.getBody()));
+				logger.error("CORRIO LA FUNCION");
 
 				// if (!userExists(chatId).getBody()) {
 				// 	promptForUserInformation(chatId);
@@ -364,17 +342,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 
 	//TelegramUSER
-	public ResponseEntity<Boolean> userExists(@PathVariable("chatId") long chatId){
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-		logger.error("NO SE ENVIO EL PUTO MENSAJE");
-
+	public ResponseEntity<Boolean> findIfExists(@PathVariable("chatId") long chatId){
+		logger.error("ENTRO A LA FUNCION");
 		Boolean flag = false;
-		System.out.println("Dios intento 2");
 		SendMessage message = new SendMessage();
 		message.setChatId(chatId);
 		message.setText("Ayudanos dios nmms");
@@ -393,5 +363,38 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		// }
 
 	}
-
+	//Prompts
+	public void promptForUserInformation(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter your name:");
+		try {
+			execute(message);
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+		userStates.put(chatId, "WAITING_FOR_NAME");
+	}
+	
+	public void promptForRole(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please select your role:");
+	
+		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		List<KeyboardRow> keyboard = new ArrayList<>();
+		KeyboardRow row = new KeyboardRow();
+		row.add("Manager");
+		row.add("Developer");
+		keyboard.add(row);
+		keyboardMarkup.setKeyboard(keyboard);
+		message.setReplyMarkup(keyboardMarkup);
+	
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_ROLE");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}		
+	}
 }
