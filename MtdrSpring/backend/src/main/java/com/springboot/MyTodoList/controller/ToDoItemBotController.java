@@ -118,12 +118,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			telegramUser.setName(messageTextFromTelegram);
 			telegramUser.setAccount(chatId);
 			userMap.put(chatId,telegramUser);
-			try{
-			SendMessage messageToTelegram = new SendMessage();
-			messageToTelegram.setChatId(chatId);
-			messageToTelegram.setText("Nombre seteado: "+ userMap.get(chatId).toString());
-			execute(messageToTelegram);
-			}catch(Exception e){}
 			promptForRole(chatId);
 
 		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
@@ -131,7 +125,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setRol(messageTextFromTelegram);
 				userStates.put(chatId, null);
-				ResponseEntity entity = saveUser(telegramUser);
+				// ResponseEntity entity = saveUser(telegramUser);
+				try{
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Usuario: "+ telegramUser.toString());
+					execute(messageToTelegram);
+					}catch(Exception e){}
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("Usuario creado");
