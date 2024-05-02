@@ -12,7 +12,9 @@ public enum BotMessages {
 	NEW_ITEM_ADDED("New item added! Select /todolist to return to the list of todo items, or /start to go to the main screen."),
 	BYE("Bye! Select /start to resume!"),
 	NEW_SPRINT_CREATED("Create a new Sprint\nPlease enter the information in te next format:\n[title] [status] [startDate dd-MM-yyyy] [endDate dd-MM-yyyy] [teamID]\nexample:\n[Jaimear] [In progress] [11-11-2022] [22-12-2202] [2]"),
-	NEW_SPRINT_ADDED("Sprint added!");
+	NEW_SPRINT_ADDED("Sprint added!"),
+	SPRINT_SYN_ERROR("Não não, Mala sintaxis. Por favor, reescreva o sprint corretamente ou sofra as consequências."),
+	EERROORR("Hubo un error. PERDOOOOOOOOON"); // Feelin' cute. Mey delete this text later
 
 	private String message;
 
