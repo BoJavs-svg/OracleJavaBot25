@@ -1,8 +1,8 @@
 spring:
   datasource:
     driver_class_name: oracle.jdbc.OracleDriver
-    password: PeterSong123
-    url: jdbc:oracle:thin:@petertestdb_medium?TNS_ADMIN=/Users/psong/Downloads/Wallet_petertestDB
+    password: Team250#1478
+    url: jdbc:oracle:thin:@//adb.mx-queretaro-1.oraclecloud.com:1522/oraclebotmyuc7_medium?TNS_ADMIN=/home/a01635390/Downloads/Wallet_oraclebotmyuc7
     username: TODOUSER
   jpa:
     database: ORACLE

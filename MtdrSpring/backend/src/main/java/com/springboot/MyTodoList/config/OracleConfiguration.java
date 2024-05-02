@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import oracle.jdbc.OracleDriver;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -30,13 +31,14 @@ public class OracleConfiguration {
     @Bean
     public DataSource dataSource() throws SQLException{
         OracleDataSource ds = new OracleDataSource();
-        ds.setDriverType(env.getProperty("driver_class_name"));
+        ds.setDriverType(OracleDriver.class.getName());
         logger.info("Using Driver " + env.getProperty("driver_class_name"));
         ds.setURL(env.getProperty("db_url"));
         logger.info("Using URL: " + env.getProperty("db_url"));
         ds.setUser(env.getProperty("db_user"));
         logger.info("Using Username " + env.getProperty("db_user"));
         ds.setPassword(env.getProperty("dbpassword"));
+        
 //        For local testing
 //        ds.setDriverType(dbSettings.getDriver_class_name());
 //        logger.info("Using Driver " + dbSettings.getDriver_class_name());
