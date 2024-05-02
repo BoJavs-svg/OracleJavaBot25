@@ -163,22 +163,24 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
 		try {
 			if (telegramUser!= null) {
-				Optional<TelegramUser> optionalTu = telegramUserService.saveTelegramUser(telegramUser);
-				if (optionalTu.isPresent()) {
-					TelegramUser tu = optionalTu.get();
+				TelegramUser savedUser = telegramUserService.saveTelegramUser(telegramUser);
+				if (savedUser!= null) {
 					HttpHeaders responseHeaders = new HttpHeaders();
-					responseHeaders.set("location", "" + tu.getId());
+					responseHeaders.set("location", "" + savedUser.getId());
 					responseHeaders.set("Access-Control-Expose-Headers", "location");
 					return ResponseEntity.ok().headers(responseHeaders).build();
 				} else {
-					// Handle the case where the Optional is empty
+					// Handle the case where the user is null
 					throw new IllegalArgumentException("No user saved");
 				}
 			} else {
 				throw new IllegalArgumentException("telegramUser cannot be null");
 			}
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(telegramUserService.checkTelegramUserTableExists());
+			// Log the exception or handle it as needed
+			System.err.println("Error saving TelegramUser: " + e.getMessage());
+			// Return a 500 Internal Server Error
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving TelegramUser");
 		}
 	}
 	
