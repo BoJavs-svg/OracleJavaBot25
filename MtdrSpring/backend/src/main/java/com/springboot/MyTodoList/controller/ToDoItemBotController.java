@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,22 +159,28 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 
 	}
-	
 	public ResponseEntity saveUser(@RequestBody TelegramUser telegramUser, long chatId) {
 		try {
-			if (telegramUser != null) {
-			TelegramUser tu = telegramUserService.saveTelegramUser(telegramUser);
-			HttpHeaders responseHeaders = new HttpHeaders();
-			responseHeaders.set("location", "" + tu.getId());
-			responseHeaders.set("Access-Control-Expose-Headers", "location");
-            return ResponseEntity.ok().headers(responseHeaders).build();
-			}else{
+			if (telegramUser!= null) {
+				Optional<TelegramUser> optionalTu = telegramUserService.saveTelegramUser(telegramUser);
+				if (optionalTu.isPresent()) {
+					TelegramUser tu = optionalTu.get();
+					HttpHeaders responseHeaders = new HttpHeaders();
+					responseHeaders.set("location", "" + tu.getId());
+					responseHeaders.set("Access-Control-Expose-Headers", "location");
+					return ResponseEntity.ok().headers(responseHeaders).build();
+				} else {
+					// Handle the case where the Optional is empty
+					throw new IllegalArgumentException("No user saved");
+				}
+			} else {
 				throw new IllegalArgumentException("telegramUser cannot be null");
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(telegramUserService.checkTelegramUserTableExists());
 		}
 	}
+	
 	
 	//Prompts
 	public void promptForUserInformation(long chatId) {
