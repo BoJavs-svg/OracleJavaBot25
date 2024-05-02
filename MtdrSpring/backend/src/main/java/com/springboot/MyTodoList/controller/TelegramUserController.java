@@ -26,9 +26,9 @@ public class TelegramUserController {
     @PostMapping
     public ResponseEntity<TelegramUser> saveTelegramUser(@RequestBody TelegramUser telegramUser) {
         try {
-            Optional<TelegramUser> savedUserOptional = telegramUserService.saveTelegramUser(telegramUser);
-            if (savedUserOptional.isPresent()) {
-                return new ResponseEntity<>(savedUserOptional.get(), HttpStatus.CREATED);
+            TelegramUser savedUser = telegramUserService.saveTelegramUser(telegramUser);
+            if (savedUser!= null) {
+                return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
@@ -36,7 +36,7 @@ public class TelegramUserController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+    
     @GetMapping("/{accountID}")
     public ResponseEntity<Boolean> userExistsByAccount(@PathVariable Long accountID) {
         return ResponseEntity.ok(telegramUserService.userExists(accountID));
