@@ -1,4 +1,4 @@
-// Latest: [6]
+// Latest: [7]
 package com.springboot.MyTodoList.controller;
 
 import java.text.ParseException;
@@ -58,7 +58,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
 
-			// if (TelState == null){
+			if (TelState == null){
 				if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 						|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 
@@ -82,6 +82,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
 					keyboard.add(row);
 
+					// 3
+					row = new KeyboardRow();
+					row.add(BotLabels.ADD_NEW_SPRINT.getLabel());
+					// row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+					keyboard.add(row);
+
 					// Set the keyboard
 					keyboardMarkup.setKeyboard(keyboard);
 
@@ -102,6 +108,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					messageToTelegram.setText(BotMessages.NEW_SPRINT_CREATED.getMessage());
 
 					TelState = "Sprint";
+
+					try { // Contestar
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
 
 				} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
@@ -252,74 +264,81 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error(e.getLocalizedMessage(), e);
 					}
 				}
-			// } else {
-			// 	// User's las message was /sprint
-			// 	if("Sprint".equals(TelState)){
-			// 		// Sprint will use only one message to receive the 5 parameters
-			// 		String regex = "\\[([^\\]]+)\\]";
+			} else {
+				// User's las message was /sprint
+				if("Sprint".equals(TelState)){
+					// Sprint will use only one message to receive the 5 parameters
+					String regex = "\\[([^\\]]+)\\]";
 
-			// 		java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
-			// 		java.util.regex.Matcher matcher = pattern.matcher(messageTextFromTelegram);
+					java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+					java.util.regex.Matcher matcher = pattern.matcher(messageTextFromTelegram);
 
-			// 		String title = null, status = null, startDateStr = null, endDateStr = null;
-			// 		int	teamID = 0;
+					String title = null, status = null, startDateStr = null, endDateStr = null;
+					int	teamID = 0;
 
-			// 		int index = 0;
-			// 		while (matcher.find()) {
-			// 			String match = matcher.group(1);
-			// 			switch (index) {
-			// 				case 0:
-			// 					title = match;
-			// 					break;
-			// 				case 1:
-			// 					status = match;
-			// 					break;
-			// 				case 2:
-			// 					startDateStr = match;
-			// 					break;
-			// 				case 3:
-			// 					endDateStr = match;
-			// 					break;
-			// 				case 4:
-			// 					teamID = Integer.parseInt(match);
-			// 					break;
-			// 				default:
-			// 					SendMessage messageToTelegra = new SendMessage();
-			// 					messageToTelegra.setChatId(chatId);
-			// 					messageToTelegra.setText(BotMessages.SPRINT_SYN_ERROR.getMessage());		
-			// 					break;
-			// 			}
-			// 			index++;
-			// 		}
-			// 		Date startDate=null;
-			// 		Date endDate=null;
-			// 		// SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
-			// 		// Date startDate = dateStartDate.parse(startDateStr);
-			// 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-			// 		try {
-			// 			Date date = dateFormat.parse(endDateStr);
-			// 			startDate = date;
-			// 		} catch (ParseException e) {
-			// 			System.out.println("Error al convertir String a Date: " + e.getMessage());
-			// 		}
-			// 		try {
-			// 			Date date = dateFormat.parse(startDateStr);
-			// 			startDate = date;
-			// 		} catch (ParseException e) {
-			// 			System.out.println("Error al convertir String a Date: " + e.getMessage());
-			// 		}
+					int index = 0;
+					while (matcher.find()) {
+						String match = matcher.group(1);
+						switch (index) {
+							case 0:
+								title = match;
+								break;
+							case 1:
+								status = match;
+								break;
+							case 2:
+								startDateStr = match;
+								break;
+							case 3:
+								endDateStr = match;
+								break;
+							case 4:
+								teamID = Integer.parseInt(match);
+								break;
+							default:
+								SendMessage messageToTelegra = new SendMessage();
+								messageToTelegra.setChatId(chatId);
+								messageToTelegra.setText(BotMessages.SPRINT_SYN_ERROR.getMessage());		
+								break;
+						}
+						index++;
+					}
+					Date startDate=null;
+					Date endDate=null;
+					// SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
+					// Date startDate = dateStartDate.parse(startDateStr);
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+					try {
+						Date date = dateFormat.parse(endDateStr);
+						startDate = date;
+					} catch (ParseException e) {
+						System.out.println("Error al convertir String a Date: " + e.getMessage());
+					}
+					try {
+						Date date = dateFormat.parse(startDateStr);
+						startDate = date;
+					} catch (ParseException e) {
+						System.out.println("Error al convertir String a Date: " + e.getMessage());
+					}
 
-			// 		SendMessage messageToTelegram = new SendMessage();
-			// 		messageToTelegram.setChatId(chatId);
-			// 		messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
 
-			// 		Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
-			// 	} else {
-			// 		SendMessage messageToTelegram = new SendMessage();
-			// 		messageToTelegram.setChatId(chatId);
-			// 		messageToTelegram.setText(BotMessages.EERROORR.getMessage());
-			// 	}
-			// }
+					Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+
+					try { // Contestar
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+					
+				} else {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.EERROORR.getMessage());
+				}
+			}
 		}
 	}
 
