@@ -266,6 +266,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			} else {
 				// User's las message was /sprint
+				// CHANGE DE STATEEEE
+				// OR Jaime WILL NEVER BE THE SAMEEEE AWPJDEO AFIERRF$WRT%$U$%TUGIWORIHF
+				TelState = null;
+
 				if("Sprint".equals(TelState)){
 					// Sprint will use only one message to receive the 5 parameters
 					String regex = "\\[([^\\]]+)\\]";

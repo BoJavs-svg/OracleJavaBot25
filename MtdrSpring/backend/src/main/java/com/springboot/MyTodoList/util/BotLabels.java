@@ -11,12 +11,7 @@ public enum BotLabels {
 	DELETE("DELETE"),
 	MY_TODO_LIST("MY TODO LIST"),
 	DASH("-"),
-	ADD_NEW_SPRINT("SPRINT"),
-	SPRINT_TITLE("S. Title"),
-	SPRINT_STATUS("S. Status"),
-	SPRINT_START_D("S. Start Date"),
-	SPRINT_END_D("S. End Date"),
-	SPRINT_TEAMID("Team ID");
+	ADD_NEW_SPRINT("Sprint");
 
 	private String label;
 
