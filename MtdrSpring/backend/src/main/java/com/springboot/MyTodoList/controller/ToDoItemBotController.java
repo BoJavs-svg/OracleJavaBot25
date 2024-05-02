@@ -4,9 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 // import java.time.OffsetDateTime;
-import java.time.LocalDate;
+// import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+// import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -28,7 +28,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.Sprint;
-import com.springboot.MyTodoList.model.SprintCreationState;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.service.ToDoItemService;
 import com.springboot.MyTodoList.util.BotCommands;
@@ -96,96 +95,80 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			} else if (messageTextFromTelegram.equals(BotCommands.ADD_SPRINT.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_SPRINT.getLabel())) {
 
+				// // Convertir el mensaje recibido en una fecha y guardarla como la fecha de inicio del sprint
+				// String stringEndDate = messageTextFromTelegram;
+				// SimpleDateFormat dateEndDate = new SimpleDateFormat("dd-MM-yyyy");
+				// try {
+				// 	Date date = dateEndDate.parse(stringEndDate);
+				// 	// System.out.println("Fecha convertida: " + date);
+				// 	startDate = date;
+				// } catch (ParseException e) {
+				// 	System.out.println("Error al convertir String a Date: " + e.getMessage());
+				// }
+			   
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText("Create new sprint. Please provide the following details:");
-			
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				messageToTelegram.setText(BotMessages.NEW_SPRINT_CREATED.getMessage());
 
-				// Definir un estado inicial para el proceso de creación del sprint
-				SprintCreationState sprintCreationState = SprintCreationState.WAITING_FOR_TITLE;
+				// Sprint will use only one message to receive the 5 parameters
+				String regex = "\\[([^\\]]+)\\]";
 
-				// Variables para almacenar los parámetros del sprint
-				String title = "";
-				String status = "";
-				Date startDate = null;
-				Date endDate = null;
-				int teamID = 0;
+				java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        		java.util.regex.Matcher matcher = pattern.matcher(messageTextFromTelegram);
 
-				// Procesar los mensajes entrantes para obtener los parámetros del sprint
-				// El bucle continuará hasta que se hayan recibido todos los parámetros necesarios
-				while (sprintCreationState != SprintCreationState.SPRINT_CREATED) {
-					// Recibir el siguiente mensaje del usuario
-					// Aquí deberías implementar la lógica para recibir el mensaje del usuario (puedes usar el mismo método onUpdateReceived)
+				String title = null, status = null, startDateStr = null, endDateStr = null;
+        		int	teamID = 0;
 
-					// Dependiendo del estado actual, procesar el mensaje recibido
-					switch (sprintCreationState) {
-						case WAITING_FOR_TITLE:
-							// Guardar el título del sprint del mensaje recibido
-							title = messageTextFromTelegram;
-							// Actualizar el estado para esperar el siguiente parámetro
-							sprintCreationState = SprintCreationState.WAITING_FOR_STATUS;
+				int index = 0;
+				while (matcher.find()) {
+					String match = matcher.group(1);
+					switch (index) {
+						case 0:
+							title = match;
 							break;
-						case WAITING_FOR_STATUS:
-							// Guardar el estado del sprint del mensaje recibido
-							status = messageTextFromTelegram;
-							sprintCreationState = SprintCreationState.WAITING_FOR_START_DATE;
+						case 1:
+							status = match;
 							break;
-						case WAITING_FOR_START_DATE:
-							// Convertir el mensaje recibido en una fecha y guardarla como la fecha de inicio del sprint
-							String stringStartDate = messageTextFromTelegram;
-							 SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
-							try {
-								Date date = dateStartDate.parse(stringStartDate);
-								// System.out.println("Fecha convertida: " + date);
-								startDate = date;
-							} catch (ParseException e) {
-								System.out.println("Error al convertir String a Date: " + e.getMessage());
-							}
-							sprintCreationState = SprintCreationState.WAITING_FOR_END_DATE;
+						case 2:
+							startDateStr = match;
 							break;
-						case WAITING_FOR_END_DATE:
-							// Convertir el mensaje recibido en una fecha y guardarla como la fecha de inicio del sprint
-							String stringEndDate = messageTextFromTelegram;
-							 SimpleDateFormat dateEndDate = new SimpleDateFormat("dd-MM-yyyy");
-							try {
-								Date date = dateEndDate.parse(stringEndDate);
-								// System.out.println("Fecha convertida: " + date);
-								startDate = date;
-							} catch (ParseException e) {
-								System.out.println("Error al convertir String a Date: " + e.getMessage());
-							}
-							sprintCreationState = SprintCreationState.WAITING_FOR_TEAM_ID;
+						case 3:
+							endDateStr = match;
 							break;
-						case WAITING_FOR_TEAM_ID:
-							// Convertir el mensaje recibido en un número y guardarlo como el team ID del sprint
-							teamID = Integer.parseInt(messageTextFromTelegram);
-							// Actualizar el estado para indicar que se han recibido todos los parámetros necesarios
-							sprintCreationState = SprintCreationState.SPRINT_CREATED;
+						case 4:
+							teamID = Integer.parseInt(match);
 							break;
-						case SPRINT_CREATED:
+						default:
 							break;
 					}
+					index++;
 				}
-
-				// Una vez que se hayan recibido todos los parámetros, crear el sprint y guardarlo en la base de datos
-				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
-				// Llamar al método para guardar el sprint en la base de datos
-				// toDoItemService.createSprint(newSprint);
-
-				// Enviar un mensaje al usuario confirmando que el sprint se ha creado correctamente
-				SendMessage confirmationMessage = new SendMessage();
-				confirmationMessage.setChatId(chatId);
-				confirmationMessage.setText("The sprint has been created successfully.");
+				Date startDate=null;
+				Date endDate=null;
+				// SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
+				// Date startDate = dateStartDate.parse(startDateStr);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 				try {
-					execute(confirmationMessage);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
+					Date date = dateFormat.parse(endDateStr);
+					startDate = date;
+				} catch (ParseException e) {
+					System.out.println("Error al convertir String a Date: " + e.getMessage());
 				}
+				try {
+					Date date = dateFormat.parse(startDateStr);
+					startDate = date;
+				} catch (ParseException e) {
+					System.out.println("Error al convertir String a Date: " + e.getMessage());
+				}
+
+				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+				
+				SendMessage sa = new SendMessage();
+				sa.setChatId(chatId);
+				sa.setText("a"+title+ status+startDate+ endDate+ teamID);
+			
+
+
 			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
