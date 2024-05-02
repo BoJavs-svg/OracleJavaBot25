@@ -54,11 +54,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private Map<Long, String> userStates = new HashMap<>();
 	private Map<Long, TelegramUser> userMap = new HashMap<>();	
 	
-	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
+	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, TelegramUserService telegramUserService) {
 		super(botToken);
 		logger.info("Bot Token: " + botToken);
 		logger.info("Bot name: " + botName);
 		this.toDoItemService = toDoItemService;
+		this.telegramUserService=telegramUserService;
 		this.botName = botName;
 	}
 	@Override
