@@ -10,13 +10,13 @@ public class TelegramUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "NAME", nullable = false)
+    @Column(name = "NAME")
     private String name;
 
-    @Column(name = "ACCOUNT", nullable = false)
+    @Column(name = "ACCOUNT")
     private Long account;
 
-    @Column(name = "ROL", nullable = false)
+    @Column(name = "ROL")
     private String rol;
     
      //Constructor
