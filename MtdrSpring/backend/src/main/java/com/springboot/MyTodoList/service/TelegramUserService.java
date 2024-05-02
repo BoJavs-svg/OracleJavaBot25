@@ -18,6 +18,7 @@ public class TelegramUserService {
 
     @Autowired
     private TelegramUserRepository telegramUserRepository;    
+    
     public String checkTelegramUserTableExists() {
         try {
             telegramUserRepository.getAllUsers();
@@ -27,14 +28,18 @@ public class TelegramUserService {
         }
     }
     //Save user
-    public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
-        try {
-            return telegramUserRepository.save(telegramUser);
-        } catch (Exception e) {
-            // Rethrow the exception with a more descriptive message
-            throw new RuntimeException("Error saving TelegramUser: " + e.getMessage(), e);
-        }
+    @Autowired
+public Optional<TelegramUser> saveTelegramUser(TelegramUser telegramUser) {
+    try {
+        return Optional.ofNullable(telegramUserRepository.save(telegramUser));
+    } catch (Exception e) {
+        // Log the error or handle it as needed
+        System.err.println("Error saving TelegramUser: " + e.getMessage());
+        // Return an empty Optional to indicate no user was saved
+        return Optional.empty();
     }
+}
+
     public boolean userExists(Long accountID){
         return telegramUserRepository.existsByAccount(accountID);
     }
