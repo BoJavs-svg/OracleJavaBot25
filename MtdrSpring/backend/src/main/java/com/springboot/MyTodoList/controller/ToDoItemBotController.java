@@ -1,4 +1,4 @@
-// Latest: [4]
+// Latest: [5]
 package com.springboot.MyTodoList.controller;
 
 import java.text.ParseException;
@@ -103,7 +103,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.NEW_SPRINT_CREATED.getMessage());
 
-					// TelState = "Sprint";
+					TelState = "Sprint";
 
 				} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
@@ -258,7 +258,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			} else {
 				// User's las message was /sprint
-				if(TelState=="Sprint"){
+				if("Sprint".equals(TelState)){
 					// Sprint will use only one message to receive the 5 parameters
 					String regex = "\\[([^\\]]+)\\]";
 
