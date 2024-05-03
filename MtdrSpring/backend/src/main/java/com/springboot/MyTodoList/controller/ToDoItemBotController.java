@@ -372,8 +372,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 	private String tasksToString(List<Task> tasks) {
 		StringBuilder sb = new StringBuilder();
-		for (Task task : tasks) {
-			sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
+		if (tasks.isEmpty()) {
+			sb.append("You have no tasks :)").append("\n");
+		} else {
+			for (Task task : tasks) {
+				sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
+			}
 		}
 		return sb.toString();
 	}
