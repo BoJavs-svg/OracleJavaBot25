@@ -9,12 +9,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.List;
 
-// import javax.transaction.Transactional;
+import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.Query;
 
 @Repository
-// @Transactional
-@EnableTransactionManagement
+@Transactional
 public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
     boolean existsByAccount(Long accountID);
 

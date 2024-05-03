@@ -14,8 +14,13 @@ import com.springboot.MyTodoList.repository.TelegramUserRepository;
 public class TelegramUserService {
 
     @Autowired
-    private TelegramUserRepository telegramUserRepository;    
+    private final TelegramUserRepository telegramUserRepository;
     
+    @Autowired
+    public TelegramUserService(TelegramUserRepository telegramUserRepository) {
+        this.telegramUserRepository = telegramUserRepository;
+    }
+
     public String checkTelegramUserTableExists() {
         try {
             telegramUserRepository.getAllUsers();
@@ -24,15 +29,14 @@ public class TelegramUserService {
             return "TelegramUser table does not exist or is not accessible: " + e.getMessage();
         }
     }
-    //Save user
-    @Autowired
+
     public TelegramUser saveTelegramUser(TelegramUser telegramUser) {
         try {
             return telegramUserRepository.save(telegramUser);
         } catch (Exception e) {
             // Log the exception or handle it as needed
             System.err.println("Error saving TelegramUser: " + e.getMessage());
-            // Return null to indicate the save operation failed
+            // Optionally, rethrow the exception or handle it differently
             return null;
         }
     }
