@@ -1,9 +1,16 @@
+// Latest: this one (1)
+// mvn springboot run
 package com.springboot.MyTodoList.controller;
 
 import static org.mockito.ArgumentMatchers.booleanThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+// import java.time.OffsetDateTime;
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,12 +34,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.model.TelegramUser;
 
 import com.springboot.MyTodoList.service.ToDoItemService;
 import com.springboot.MyTodoList.service.TelegramUserService;
-
-
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
@@ -62,6 +68,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		this.telegramUserService=telegramUserService;
 		this.botName = botName;
 	}
+
 	@Override
 	public void onUpdateReceived(Update update) {
 		if (update.hasMessage() && update.getMessage().hasText()) {
@@ -70,22 +77,23 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if (!userStates.containsKey(chatId)) {
          		   userStates.put(chatId, null); // Initialize state for new user
         		}
-			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
+			logger.info("I got a letter from ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
 			message.setChatId(chatId);
-			message.setText("Mensaje recibido " + messageTextFromTelegram);
+			message.setText("Mary? " + messageTextFromTelegram);
 			try{
 				execute(message);
 			}catch(TelegramApiException e){
 				logger.error("Error en mensaje recibido");
 			}
+			// start
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
 				if (!response.getBody()) {
 					message = new SendMessage();
 					message.setChatId(chatId);
-					message.setText("Ooops it seems you dont have a user. Please register");
+					message.setText("Who are you? [Please enter a name]");
 					try{
 						execute(message);
 					}catch(TelegramApiException e){
@@ -94,6 +102,149 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					promptForUserInformation(chatId);
 				} else {
 					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+			
+					ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+					List<KeyboardRow> keyboard = new ArrayList<>();
+			
+					// first row
+					KeyboardRow row = new KeyboardRow();
+					row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+					row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+					// Add the first row to the keyboard
+					keyboard.add(row);
+			
+					// second row
+					row = new KeyboardRow();
+					row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+					keyboard.add(row);
+
+					// 3
+					row = new KeyboardRow();
+					row.add(BotLabels.ADD_NEW_SPRINT.getLabel());
+					keyboard.add(row);
+			
+					// Set the keyboard
+					keyboardMarkup.setKeyboard(keyboard);
+			
+					// Add the keyboard markup
+					messageToTelegram.setReplyMarkup(keyboardMarkup);
+			
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
+			// Sprint (call)
+			} else if(messageTextFromTelegram.equals(BotCommands.ADD_SPRINT.getCommand())
+				   || messageTextFromTelegram.equals(BotLabels.ADD_NEW_SPRINT.getLabel())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.NEW_SPRINT_CREATED.getMessage());
+
+				// Change userStates for current state (/sprint called)
+				userStates.put(chatId, "SPRINT_CALLED");
+
+				try { // Contestar
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			
+			// Sprint (wait for sprint content)
+			} else if(userStates.get(chatId).equals("SPRINT_CALLED")){
+				// Sprint will use only one message to receive the 5 parameters
+				String regex = "\\[([^\\]]+)\\]";
+
+				java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+				java.util.regex.Matcher matcher = pattern.matcher(messageTextFromTelegram);
+
+				String title = null, status = null, startDateStr = null, endDateStr = null;
+				int	teamID = 0;
+
+				int index = 0;
+				while (matcher.find()) {
+					String match = matcher.group(1);
+					switch (index) {
+						case 0:
+							title = match;
+							break;
+						case 1:
+							status = match;
+							break;
+						case 2:
+							startDateStr = match;
+							break;
+						case 3:
+							endDateStr = match;
+							break;
+						case 4:
+							teamID = Integer.parseInt(match);
+							break;
+						default:
+							SendMessage messageToTelegra = new SendMessage();
+							messageToTelegra.setChatId(chatId);
+							messageToTelegra.setText(BotMessages.SPRINT_SYN_ERROR.getMessage());		
+							break;
+					}
+					index++;
+				}
+				Date startDate=null;
+				Date endDate=null;
+				// SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
+				// Date startDate = dateStartDate.parse(startDateStr);
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+				try {
+					Date date = dateFormat.parse(endDateStr);
+					startDate = date;
+				} catch (ParseException e) {
+					System.out.println("Error al convertir String a Date: " + e.getMessage());
+				}
+				try {
+					Date date = dateFormat.parse(startDateStr);
+					startDate = date;
+				} catch (ParseException e) {
+					System.out.println("Error al convertir String a Date: " + e.getMessage());
+				}
+
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
+
+				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+
+				try { // Contestar
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+				
+				userStates.put(chatId, null);
+
+			// User (wait name)
+			} else if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
+				TelegramUser telegramUser = new TelegramUser();
+				telegramUser.setName(messageTextFromTelegram);
+				telegramUser.setAccount(chatId);
+				userMap.put(chatId,telegramUser);
+				promptForRole(chatId);
+			
+			// User (wait role)
+			} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
+				try {
+					TelegramUser temp= userMap.get(chatId);
+					TelegramUser newTelegramUser = new TelegramUser(temp.getName(),chatId,messageTextFromTelegram);
+					ResponseEntity entity = saveUser(newTelegramUser,chatId);		
+					
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("User created");
+					execute(messageToTelegram);
+					userStates.put(chatId, null);
+					messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 			
@@ -124,61 +275,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					} catch (TelegramApiException e) {
 						logger.error(e.getLocalizedMessage(), e);
 					}
-				}
-		}else if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
-			TelegramUser telegramUser = new TelegramUser();
-			telegramUser.setName(messageTextFromTelegram);
-			telegramUser.setAccount(chatId);
-			userMap.put(chatId,telegramUser);
-			promptForRole(chatId);
-
-		} else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
-			try {
-				TelegramUser temp= userMap.get(chatId);
-				TelegramUser newTelegramUser = new TelegramUser(temp.getName(),chatId,messageTextFromTelegram);
-				ResponseEntity entity = saveUser(newTelegramUser,chatId);		
-				
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText("User created");
-				execute(messageToTelegram);
-				userStates.put(chatId, null);
-				messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-		
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
-		
-				// first row
-				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// Add the first row to the keyboard
-				keyboard.add(row);
-		
-				// second row
-				row = new KeyboardRow();
-				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				keyboard.add(row);
-		
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
-		
-				// Add the keyboard markup
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
-		
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
+				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
-			} catch (Exception e) {
-				logger.error(e.getLocalizedMessage(), e);
-			}
 
-		}
+			}
 		}
 	}
 
