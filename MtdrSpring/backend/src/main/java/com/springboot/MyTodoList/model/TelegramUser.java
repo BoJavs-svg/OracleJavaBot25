@@ -9,7 +9,7 @@ public class TelegramUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "NAME")
     private String name;
@@ -31,11 +31,11 @@ public class TelegramUser {
     }
 
     //Getter and setters
-     public int getId() {
+     public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
