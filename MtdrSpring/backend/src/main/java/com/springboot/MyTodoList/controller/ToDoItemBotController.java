@@ -1,4 +1,4 @@
-// Latest: this one (5)
+// Latest: this one (6)
 // mvn spring-boot:run
 package com.springboot.MyTodoList.controller;
 
@@ -22,11 +22,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.context.ApplicationContext;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -85,7 +87,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.info("I got a letter from ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
 			message.setChatId(chatId);
-			message.setText("Mary? " + messageTextFromTelegram);
+			message.setText("Mary?"); // message.setText("Mary? " + messageTextFromTelegram);
 			try{
 				execute(message);
 			}catch(TelegramApiException e){
@@ -171,7 +173,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Long teamLong = null;
 				TeamService TS = new TeamService(null);
 				Team teamID = new Team();
-				SprintController sprintController = new SprintController();
+				// SprintController sprintController = new SprintController();
 
 				int index = 0;
 				while (matcher.find()) {
@@ -224,17 +226,23 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
 
-				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID); // Sprint(title, status, startDate, endDate, teamID);
-				ResponseEntity<?> res = sprintController.createSprint(newSprint);
+				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID); 
+				ApplicationContext context = new AnnotationConfigApplicationContext(SprintController.class);
+				SprintController sprintController = context.getBean(SprintController.class);
+
+				// Llamar al método createSprint del controlador para enviar el Sprint a la base de datos
+				ResponseEntity<?> responseEntity = sprintController.createSprint(newSprint);
 				
-				SendMessage mess = new SendMessage();
-				mess.setChatId(chatId);
-				mess.setText(res.getBody().toString());
-				try { // Contestar si se pudo meter a la base o k
-					execute(mess);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				//sprintController.createSprint(newSprint);
+				// ResponseEntity<?> res = sprintController.createSprint(newSprint);
+				// SendMessage mess = new SendMessage();
+				// mess.setChatId(chatId);
+				// mess.setText(res.getBody().toString());
+				// try { // Contestar si se pudo meter a la base o k
+				// 	execute(mess);
+				// } catch (TelegramApiException e) {
+				// 	logger.error(e.getLocalizedMessage(), e);
+				// }
 
 				try { // Contestar
 					execute(messageToTelegram);
