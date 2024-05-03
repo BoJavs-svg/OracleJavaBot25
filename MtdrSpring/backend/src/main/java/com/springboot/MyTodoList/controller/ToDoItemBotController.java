@@ -1,4 +1,4 @@
-// Latest: [8]
+// Latest: [9]
 package com.springboot.MyTodoList.controller;
 
 import java.text.ParseException;
@@ -330,18 +330,23 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 					Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
 
-					TelState = null;
-
 					try { // Contestar
 						execute(messageToTelegram);
 					} catch (TelegramApiException e) {
 						logger.error(e.getLocalizedMessage(), e);
 					}
 					
+					TelState = null;
+
 				} else {
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.EERROORR.getMessage());
+					try { 
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
 				}
 			}
 		}
