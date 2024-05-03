@@ -24,6 +24,10 @@ public class SprintService {
         this.sprintRepository=sprintRepository;
     }
 
+    public Sprint createSprint(Sprint sprint) {
+        return sprintRepository.save(sprint);
+    }
+
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
     }
