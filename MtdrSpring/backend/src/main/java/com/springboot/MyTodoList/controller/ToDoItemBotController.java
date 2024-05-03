@@ -88,12 +88,20 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
          		   userStates.put(chatId, null); // Initialize state for new user
         		}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
-			
+			SendMessage message = new SendMessage();
+			message.setChatId(chatId);
+			message.setText("Mensaje recibido " + messageTextFromTelegram);
+			try{
+				execute(message);
+			}catch(TelegramApiException e){
+				logger.error("Error en mensaje recibido");
+			}
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
+				logger.info("Response status code "+response.getBody());
 				if (!response.getBody()) {
-					SendMessage message = new SendMessage();
+					message = new SendMessage();
 					message.setChatId(chatId);
 					message.setText("Ooops it seems you dont have a user. Please register");
 					try{
@@ -103,10 +111,17 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 					promptForUserInformation(chatId);
 				} else {
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-					
+					try{
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+						execute(messageToTelegram);
+						markupKB(chatId);
+					}catch (Exception e){
+						
+					}
+
 				}
 		}else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
 				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
@@ -248,7 +263,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			}
 
 		}
-		}
+	}
 	}
 
 	@Override
@@ -300,34 +315,40 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	public List<Sprint> getAllSprints(){
 		return sprintService.findAll();
 	}
+
 	//Markup keyboard
 	public void markupKB(long chatId) {
 		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		
 		List<KeyboardRow> keyboard = new ArrayList<>();
 		KeyboardRow row = new KeyboardRow();
 		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
 		Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(chatId);
+		
+		// Check if the user exists
 		if (userOpt.isPresent()) {
 			TelegramUser user = userOpt.get();
-			if ("Manager".equals(user.getRol())) {
+			
+			if ("Manager".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.ADD_NEW_TASK.getLabel());
-			} else if ("Developer".equals(user.getRol())) {
+			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
 			}
 		}
+		
 		keyboard.add(row);
-
 		keyboardMarkup.setKeyboard(keyboard);
 		SendMessage messageToTelegram = new SendMessage();
-
 		messageToTelegram.setReplyMarkup(keyboardMarkup);
-
+		
 		try {
-			execute(messageToTelegram);
+				execute(messageToTelegram);
 		} catch (TelegramApiException e) {
-			logger.error(e.getLocalizedMessage(), e);
+			// Log the error
+			logger.error("Error Markup Keyboard"+e.getLocalizedMessage(), e);
 		}
 	}
+
 
 	//Prompts
 	public void promptForUserInformation(long chatId) {
