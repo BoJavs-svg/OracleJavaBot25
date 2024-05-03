@@ -1,21 +1,23 @@
-// Latest: this one (2)
-// mvn springboot run
+// Latest: this one (3)
+// mvn spring-boot:run
 package com.springboot.MyTodoList.controller;
+
+// import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // import static org.mockito.ArgumentMatchers.booleanThat; No sé para qué son estas líneas, las tenía el Javier
 // import static org.mockito.ArgumentMatchers.eq;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+// import java.text.ParseException; Descomentar al utilizar String->Date
+// import java.text.SimpleDateFormat;
 
 // import java.time.OffsetDateTime;
-import java.time.OffsetDateTime;
-import java.util.Date;
+// import java.time.OffsetDateTime;
+// import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.Optional;
+// import java.util.stream.Collectors;
+// import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,15 +31,18 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+// import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.model.Team;
 import com.springboot.MyTodoList.model.TelegramUser;
 
 import com.springboot.MyTodoList.service.ToDoItemService;
+import com.springboot.MyTodoList.service.TeamService;
+import com.springboot.MyTodoList.service.SprintService;
 import com.springboot.MyTodoList.service.TelegramUserService;
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
@@ -45,7 +50,7 @@ import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 
 import java.util.Map;
-import java.util.HashMap;
+// import java.util.HashMap;
 
 
 public class ToDoItemBotController extends TelegramLongPollingBot {
@@ -162,8 +167,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
 				java.util.regex.Matcher matcher = pattern.matcher(messageTextFromTelegram);
 
-				String title = null, status = null, startDateStr = null, endDateStr = null;
-				int	teamID = 0;
+				String title = null, status = null, startDate = null, endDate = null;
+				Long teamLong = null;
+				TeamService TS = new TeamService(null);
+				Team teamID = new Team();
+				SprintController sprintController = new SprintController();
 
 				int index = 0;
 				while (matcher.find()) {
@@ -176,13 +184,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							status = match;
 							break;
 						case 2:
-							startDateStr = match;
+							startDate = match; //startDateStr
 							break;
 						case 3:
-							endDateStr = match;
+							endDate = match; // endDateStr
 							break;
 						case 4:
-							teamID = Integer.parseInt(match);
+							teamLong = Long.parseLong(match);
+							teamID = TS.getTeamById(teamLong);
 							break;
 						default:
 							SendMessage messageToTelegra = new SendMessage();
@@ -192,29 +201,31 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 					index++;
 				}
-				Date startDate=null;
-				Date endDate=null;
-				// SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
-				// Date startDate = dateStartDate.parse(startDateStr);
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-				try {
-					Date date = dateFormat.parse(endDateStr);
-					startDate = date;
-				} catch (ParseException e) {
-					System.out.println("Error al convertir String a Date: " + e.getMessage());
-				}
-				try {
-					Date date = dateFormat.parse(startDateStr);
-					startDate = date;
-				} catch (ParseException e) {
-					System.out.println("Error al convertir String a Date: " + e.getMessage());
-				}
+				// D e s p r e c i a d o. Se cambiaron los tipos Date por String
+				// Date startDate=null;
+				// Date endDate=null;
+				// // SimpleDateFormat dateStartDate = new SimpleDateFormat("dd-MM-yyyy");
+				// // Date startDate = dateStartDate.parse(startDateStr);
+				// SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+				// try {
+				// 	Date date = dateFormat.parse(endDateStr);
+				// 	startDate = date;
+				// } catch (ParseException e) {
+				// 	System.out.println("Error al convertir String a Date: " + e.getMessage());
+				// }
+				// try {
+				// 	Date date = dateFormat.parse(startDateStr);
+				// 	startDate = date;
+				// } catch (ParseException e) {
+				// 	System.out.println("Error al convertir String a Date: " + e.getMessage());
+				// }
 
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
 
-				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID); // Sprint(title, status, startDate, endDate, teamID);
+				sprintController.createSprint(newSprint);
 
 				try { // Contestar
 					execute(messageToTelegram);

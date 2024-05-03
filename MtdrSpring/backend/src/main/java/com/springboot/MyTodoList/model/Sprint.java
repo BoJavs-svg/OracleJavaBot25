@@ -1,35 +1,37 @@
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
-import java.util.Date;
+
 
 @Entity
-@Table(name = "Sprint")
+@Table(name = "SPRINT")
 public class Sprint {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // @Column(name = "id")
-    int ID;
+    @Column(name = "ID")
+    private Long ID; 
 
-    @Column(name = "title")
+    @Column(name = "TITLE")
     private String title;
 
-    @Column(name = "status")
+    @Column(name = "STATUS")
     private String status;
 
-    @Column(name = "startDate")
-    private Date startDate;
+   @Column(name = "START_DATE")
+    private String startDate; 
 
-    @Column(name = "endDate")
-    private Date endDate;
+    @Column(name = "END_DATE")
+    private String endDate; 
 
-    @Column(name = "teamID")
-    private int teamID;
+    @ManyToOne
+    @JoinColumn(name = "TEAMID", referencedColumnName = "id")
+    private Team teamID;
+    
 
-    public Sprint() {
+    public Sprint() {   
     }
 
-    public Sprint(String title, String status, Date startDate, Date endDate, int teamID) {
+    public Sprint(String title, String status, String startDate, String endDate, Team teamID) {
         this.title = title;
         this.status = status;
         this.startDate = startDate;
@@ -37,11 +39,11 @@ public class Sprint {
         this.teamID = teamID;
     }
 
-    public int getId() {
+    public long getId() {
         return ID;
     }
 
-    public void setId(int ID) {
+    public void setId(long ID) {
         this.ID = ID;
     }
 
@@ -61,27 +63,27 @@ public class Sprint {
         this.status = status;
     }
 
-    public Date getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 
-    public int getTeamID() {
+    public Team getTeamID() {
         return teamID;
     }
 
-    public void setTeamID(int teamID) {
+    public void setTeamID(Team teamID) {
         this.teamID = teamID;
     }
 
@@ -93,7 +95,7 @@ public class Sprint {
                 ", status='" + status + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", teamID=" + teamID +
+                ", teamID=" + teamID.toString() +
                 '}';
     }
 }
