@@ -88,11 +88,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
          		   userStates.put(chatId, null); // Initialize state for new user
         		}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
+			
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
 				if (!response.getBody()) {
-					message = new SendMessage();
+					SendMessage message = new SendMessage();
 					message.setChatId(chatId);
 					message.setText("Ooops it seems you dont have a user. Please register");
 					try{
