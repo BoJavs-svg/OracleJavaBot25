@@ -83,6 +83,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(chatId);
 				if (!response.getBody()) {
+					message = new SendMessage();
+					message.setChatId(chatId);
+					message.setText("Ooops it seems you dont have a user. Please register");
+					try{
+						execute(message);
+					}catch(TelegramApiException e){
+						logger.error("Error en mensaje recibido");
+					}
 					promptForUserInformation(chatId);
 				} else {
 					SendMessage messageToTelegram = new SendMessage();
@@ -130,12 +138,42 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				TelegramUser newTelegramUser = new TelegramUser(temp.getName(),chatId,messageTextFromTelegram);
 				ResponseEntity entity = saveUser(newTelegramUser,chatId);		
 				
-
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(entity.getBody().toString());
+				messageToTelegram.setText("User created");
 				execute(messageToTelegram);
 				userStates.put(chatId, null);
+				messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+		
+				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				List<KeyboardRow> keyboard = new ArrayList<>();
+		
+				// first row
+				KeyboardRow row = new KeyboardRow();
+				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+				// Add the first row to the keyboard
+				keyboard.add(row);
+		
+				// second row
+				row = new KeyboardRow();
+				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				keyboard.add(row);
+		
+				// Set the keyboard
+				keyboardMarkup.setKeyboard(keyboard);
+		
+				// Add the keyboard markup
+				messageToTelegram.setReplyMarkup(keyboardMarkup);
+		
+				try {
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
 			} catch (Exception e) {
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -192,16 +230,16 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		message.setText("Please enter your name:");
 		try {
 			execute(message);
+			userStates.put(chatId, "WAITING_FOR_NAME");
 		} catch (TelegramApiException e) {
 			logger.error(e.getLocalizedMessage(), e);
 		}	
-		userStates.put(chatId, "WAITING_FOR_NAME");
 	}
 	
 	public void promptForRole(long chatId) {
 		SendMessage message = new SendMessage();
 		message.setChatId(chatId);
-		message.setText("Please select your role:");
+		message.setText("Please select your role from the keyboard markup:");
 	
 		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 		List<KeyboardRow> keyboard = new ArrayList<>();
