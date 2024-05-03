@@ -1,4 +1,4 @@
-// Latest: this one (7)
+// Latest: this one (8)
 // mvn spring-boot:run
 package com.springboot.MyTodoList.controller;
 
@@ -173,36 +173,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Long teamLong = null;
 				TeamService TS = new TeamService(null);
 				Team teamID = new Team();
-				// SprintController sprintController = new SprintController();
+				SprintController sprintController = new SprintController();
 
-				// int index = 0;
-				// while (matcher.find()) {
-				// 	String match = matcher.group(1);
-				// 	switch (index) {
-				// 		case 0:
-				// 			title = match;
-				// 			break;
-				// 		case 1:
-				// 			status = match;
-				// 			break;
-				// 		case 2:
-				// 			startDate = match; //startDateStr
-				// 			break;
-				// 		case 3:
-				// 			endDate = match; // endDateStr
-				// 			break;
-				// 		case 4:
-				// 			teamLong = Long.parseLong(match);
-				// 			teamID = TS.getTeamById(teamLong);
-				// 			break;
-				// 		default:
-				// 			SendMessage messageToTelegra = new SendMessage();
-				// 			messageToTelegra.setChatId(chatId);
-				// 			messageToTelegra.setText(BotMessages.SPRINT_SYN_ERROR.getMessage());		
-				// 			break;
-				// 	}
-				// 	index++;
-				// }
+				int index = 0;
+				while (matcher.find()) {
+					String match = matcher.group(1);
+					switch (index) {
+						case 0:
+							title = match;
+							break;
+						case 1:
+							status = match;
+							break;
+						case 2:
+							startDate = match; //startDateStr
+							break;
+						case 3:
+							endDate = match; // endDateStr
+							break;
+						case 4:
+							teamLong = Long.parseLong(match);
+							teamID = TS.getTeamById(teamLong);
+							break;
+						default:
+							SendMessage messageToTelegra = new SendMessage();
+							messageToTelegra.setChatId(chatId);
+							messageToTelegra.setText(BotMessages.SPRINT_SYN_ERROR.getMessage());		
+							break;
+					}
+					index++;
+				}
 
 				// D e s p r e c i a d o. Se cambiaron los tipos Date por String
 				// Date startDate=null;
@@ -227,14 +227,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
 
-				title = "Jaimear";
-				status = "In Progresss";
-				startDate = "11-11-1011";
-				endDate = "22-22-2022";
-				teamID = new Team();
 				Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID); 
-				ApplicationContext context = new AnnotationConfigApplicationContext(SprintController.class);
-				SprintController sprintController = context.getBean(SprintController.class);
+				// ApplicationContext context = new AnnotationConfigApplicationContext(SprintController.class);
+				// SprintController sprintController = context.getBean(SprintController.class);
 
 				// Llamar al método createSprint del controlador para enviar el Sprint a la base de datos
 				ResponseEntity<?> responseEntity = sprintController.createSprint(newSprint);

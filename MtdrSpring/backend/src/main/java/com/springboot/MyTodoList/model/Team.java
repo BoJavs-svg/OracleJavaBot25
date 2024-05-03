@@ -2,11 +2,11 @@ package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
 
-import com.springboot.MyTodoList.repository.TeamRepository;
+// import com.springboot.MyTodoList.repository.TeamRepository;
 
 import java.io.Serializable;
 // import java.util.Date;
-import java.util.Optional;
+// import java.util.Optional;
 
 @Entity
 @Table(name = "TEAM")
