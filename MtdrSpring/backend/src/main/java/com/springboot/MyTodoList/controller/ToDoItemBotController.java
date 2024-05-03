@@ -1,4 +1,4 @@
-// Latest: [7]
+// Latest: [8]
 package com.springboot.MyTodoList.controller;
 
 import java.text.ParseException;
@@ -268,7 +268,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				// User's las message was /sprint
 				// CHANGE DE STATEEEE
 				// OR Jaime WILL NEVER BE THE SAMEEEE AWPJDEO AFIERRF$WRT%$U$%TUGIWORIHF
-				TelState = null;
 
 				if("Sprint".equals(TelState)){
 					// Sprint will use only one message to receive the 5 parameters
@@ -330,6 +329,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					messageToTelegram.setText(BotMessages.NEW_SPRINT_ADDED.getMessage());
 
 					Sprint newSprint = new Sprint(title, status, startDate, endDate, teamID);
+
+					TelState = null;
 
 					try { // Contestar
 						execute(messageToTelegram);
