@@ -96,35 +96,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-			
-					ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-					List<KeyboardRow> keyboard = new ArrayList<>();
-			
-					// first row
-					KeyboardRow row = new KeyboardRow();
-					row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-					row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-					// Add the first row to the keyboard
-					keyboard.add(row);
-			
-					// second row
-					row = new KeyboardRow();
-					row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-					row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-					keyboard.add(row);
-			
-					// Set the keyboard
-					keyboardMarkup.setKeyboard(keyboard);
-			
-					// Add the keyboard markup
-					messageToTelegram.setReplyMarkup(keyboardMarkup);
-			
-					try {
-						execute(messageToTelegram);
-					} catch (TelegramApiException e) {
-						logger.error(e.getLocalizedMessage(), e);
-					}
+					
 				}
+		}else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
+				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
+		
 		}else if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 			TelegramUser telegramUser = new TelegramUser();
 			telegramUser.setName(messageTextFromTelegram);
@@ -142,38 +118,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText("User created");
 				execute(messageToTelegram);
+				userMap.put(chatId,null);
 				userStates.put(chatId, null);
 				messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
 				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-		
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
-		
-				// first row
-				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// Add the first row to the keyboard
-				keyboard.add(row);
-		
-				// second row
-				row = new KeyboardRow();
-				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				keyboard.add(row);
-		
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
-		
-				// Add the keyboard markup
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
-		
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				markupKB(chatId);
+				execute(messageToTelegram);				
 			} catch (Exception e) {
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -220,9 +171,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			// Return a 500 Internal Server Error
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving TelegramUser");
 		}
+	}	
+	//Markup keyboard
+	public void markupKB(long chatId) {
+		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		List<KeyboardRow> keyboard = new ArrayList<>();
+		KeyboardRow row = new KeyboardRow();
+		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+		Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(chatId);
+		if (userOpt.isPresent()) {
+			TelegramUser user = userOpt.get();
+			if ("Manager".equals(user.getRol())) {
+				row.add(BotLabels.ADD_NEW_TASK.getLabel());
+			} else if ("Developer".equals(user.getRol())) {
+				// Add options for Developer
+			}
+		}
+		keyboard.add(row);
+
+		keyboardMarkup.setKeyboard(keyboard);
+		SendMessage messageToTelegram = new SendMessage();
+
+		messageToTelegram.setReplyMarkup(keyboardMarkup);
+
+		try {
+			execute(messageToTelegram);
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}
 	}
-	
-	
+
 	//Prompts
 	public void promptForUserInformation(long chatId) {
 		SendMessage message = new SendMessage();
