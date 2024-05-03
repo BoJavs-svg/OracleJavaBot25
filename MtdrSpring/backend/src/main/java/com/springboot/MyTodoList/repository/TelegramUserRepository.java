@@ -20,4 +20,7 @@ public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long
     @Query(value = "SELECT * FROM TELEGRAMUSER", nativeQuery = true)
     List<TelegramUser> getAllUsers();
 
+    @Query(value = "SELECT * FROM TELEGRAMUSER WHERE account = ?1", nativeQuery = true)
+    List<TelegramUser> findByAccount(Long accountID);
+
 }

@@ -44,6 +44,9 @@ public class TelegramUserService {
     public boolean userExists(Long accountID){
         return telegramUserRepository.existsByAccount(accountID);
     }
+    public Optional<TelegramUser> getUserbyAccount (Long accountID){
+        return telegramUserRepository.findByAccount(accountID).stream().findFirst();
+    }
     public Optional<TelegramUser> findById(Long id){
         return telegramUserRepository.findById(id);
     }
