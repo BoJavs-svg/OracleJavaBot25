@@ -1,4 +1,4 @@
-// Latest: [9]
+// Latest: [10]
 package com.springboot.MyTodoList.controller;
 
 import java.text.ParseException;
@@ -36,13 +36,18 @@ import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	private static final Logger logger = LoggerFactory.getLogger(ToDoItemBotController.class);
 	private ToDoItemService toDoItemService;
 	private String botName;
+	// private Map<Long, String> userStates = new HashMap<>();
+	// private Map<Long, TelegramUser> userMap = new HashMap<>();
 
-	private String TelState = null;
+	// private String TelState = null; // Replaced by HashMap
 
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
 		super(botToken);
@@ -57,8 +62,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		if (update.hasMessage() && update.getMessage().hasText()) {
 			String messageTextFromTelegram = update.getMessage().getText();
 			long chatId = update.getMessage().getChatId();
+			// if (!userStates.containsKey(chatId)) {
+			// 	userStates.put(chatId, null); // Initialize state for new user
+			// }
 
-			if (TelState == null){
+			if (TelState == null){ // TelState == null
 				if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 						|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 
