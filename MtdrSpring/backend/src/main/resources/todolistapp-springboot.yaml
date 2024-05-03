@@ -9,9 +9,9 @@ spec:
   externalTrafficPolicy: Local
 
   ports:
-    - port: 80
+    - port: 81
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8081
   selector:
     app: todolistapp-springboot
 ---
@@ -25,7 +25,7 @@ spec:
     app: todolistapp-springboot
   ports:
     - protocol: TCP
-      port: 80
+      port: 81
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -74,7 +74,7 @@ spec:
             - name: creds
               mountPath: /mtdrworkshop/creds
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
       restartPolicy: Always
       volumes:
         - name: creds
