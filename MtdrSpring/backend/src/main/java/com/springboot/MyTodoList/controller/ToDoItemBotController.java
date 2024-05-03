@@ -129,9 +129,31 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error(e.getLocalizedMessage(), e);
 						}
 					} else {
-						// Send a message indicating that only managers can add tasks
-					}
-		}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Only a manager can add tasks.");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}					}
+		}else if (messageTextFromTelegram.equals(BotCommands.CHECK_TASKS.getCommand())
+	|| messageTextFromTelegram.equals(BotLabels.CHECK_MY_TASKS.getLabel())){
+			try{
+				Long id = telegramUserService.getUserbyAccount(chatId).get().getId();
+				List<Task> tasks = taskService.getTasksByUserId(id);
+				String tasksString = tasksToString(tasks); // Convert tasks to string
+
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText(tasksString); // Set the tasks string as the message text
+
+				execute(messageToTelegram); // Send the message
+			}catch (Exception e){
+				logger.error("Error fetching tasks for user", e);
+
+			}
+	}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
 			Task tempTask = new Task();
 			tempTask.setDescription(messageTextFromTelegram);
 			tempTask.setStatus("NotStarted");
@@ -178,7 +200,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				try {
 				Long sprintId = Long.parseLong(messageTextFromTelegram);
 				// Optional<Sprint> sprint = getSprintfromId(sprintId);
-				logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 				List<Sprint> sprints = getAllSprints();
 				if (sprints.isEmpty()){
 					SendMessage messageToTelegram = new SendMessage();
@@ -186,7 +207,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					messageToTelegram.setText("Invalid Sprint try again");
 					execute(messageToTelegram);
 				}else{					
-					logger.info("SPRINT GOT GOTTEN");
 					tempTask.setSprint(sprints.get(0));
 	
 					taskService.saveTask(tempTask); // Save the task to the database
@@ -299,7 +319,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if ("Manager".equals(user.getRol())) {
 				row.add(BotLabels.ADD_NEW_TASK.getLabel());
 			} else if ("Developer".equals(user.getRol())) {
-				// Add options for Developer
+				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
 			}
 		}
 		keyboard.add(row);
@@ -350,4 +370,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.error(e.getLocalizedMessage(), e);
 		}		
 	}
+	private String tasksToString(List<Task> tasks) {
+		StringBuilder sb = new StringBuilder();
+		for (Task task : tasks) {
+			sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
+		}
+		return sb.toString();
+	}
+	
 }

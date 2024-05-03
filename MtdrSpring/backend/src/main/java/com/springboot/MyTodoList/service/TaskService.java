@@ -4,6 +4,7 @@ import com.springboot.MyTodoList.model.Task;
 import com.springboot.MyTodoList.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class TaskService {
@@ -21,5 +22,8 @@ public class TaskService {
 
     public void deleteTask(Long taskId) {
         taskRepository.deleteById(taskId);
+    }
+    public List<Task> getTasksByUserId(Long userId) {
+        return taskRepository.findByUserId(userId);
     }
 }

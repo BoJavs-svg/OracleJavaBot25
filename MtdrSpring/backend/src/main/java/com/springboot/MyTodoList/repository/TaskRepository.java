@@ -15,5 +15,6 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 @Transactional
 public interface TaskRepository extends JpaRepository<Task, Long> {
+        List<Task> findByUserId(long userId);
 
 }
