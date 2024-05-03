@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.controller;
 
 import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.model.Team;
 import com.springboot.MyTodoList.service.SprintService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,18 @@ public class SprintController {
     @Autowired
     private SprintService sprintService;
 
+    // @PostMapping
+    // public Sprint createSprint(@RequestBody Sprint sprint) {
+    //     return sprintService.addSprint(sprint);
+    // }
     @PostMapping
-    public Sprint createSprint(@RequestBody Sprint sprint) {
-        return sprintService.addSprint(sprint);
+    public ResponseEntity<?> createSprint(@RequestBody Sprint sprint) {
+    Sprint createdSprint = sprintService.addSprint(sprint);
+        if (createdSprint != null) {
+            return new ResponseEntity<>(createdSprint, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>("Failed to create team", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping

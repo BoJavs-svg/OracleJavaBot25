@@ -17,9 +17,18 @@ public class TeamController {
     @Autowired
     private TeamService teamService;
 
+    // @PostMapping
+    // public Team createTeam(@RequestBody Team team) {
+    //     return teamService.addTeam(team);
+    // }
     @PostMapping
-    public Team createTeam(@RequestBody Team team) {
-        return teamService.addTeam(team);
+    public ResponseEntity<?> createTeam(@RequestBody Team team) {
+    Team createdTeam = teamService.addTeam(team);
+        if (createdTeam != null) {
+            return new ResponseEntity<>(createdTeam, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>("Failed to create team", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping
