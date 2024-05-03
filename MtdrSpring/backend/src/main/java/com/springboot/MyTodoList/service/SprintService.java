@@ -1,7 +1,7 @@
 package com.springboot.MyTodoList.service;
 
-import com.springboot.MyTodoList.model.ToDoItem;
-import com.springboot.MyTodoList.repository.ToDoItemRepository;
+import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.repository.SprintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,40 +14,43 @@ import java.util.Optional;
 public class SprintService {
 
     @Autowired
-    private ToDoItemRepository toDoItemRepository;
-    public List<ToDoItem> findAll(){
-        List<ToDoItem> todoItems = toDoItemRepository.findAll();
-        return todoItems;
+    private SprintRepository SprintRepository;
+    public List<Sprint> findAll(){
+        List<Sprint> sprints = SprintRepository.findAll();
+        return sprints;
     }
-    public ResponseEntity<ToDoItem> getItemById(int id){
-        Optional<ToDoItem> todoData = toDoItemRepository.findById(id);
-        if (todoData.isPresent()){
-            return new ResponseEntity<>(todoData.get(), HttpStatus.OK);
+    public ResponseEntity<Sprint> getSprintById(int id){
+        Optional<Sprint> sprintData = SprintRepository.findById(id);
+        if (sprintData.isPresent()){
+            return new ResponseEntity<>(sprintData.get(), HttpStatus.OK);
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    public ToDoItem addToDoItem(ToDoItem toDoItem){
-        return toDoItemRepository.save(toDoItem);
+    public Sprint addSprint(Sprint Sprint){
+        return SprintRepository.save(Sprint);
     }
 
-    public boolean deleteToDoItem(int id){
+    public boolean deleteSprint(int id){
         try{
-            toDoItemRepository.deleteById(id);
+            SprintRepository.deleteById(id);
             return true;
         }catch(Exception e){
             return false;
         }
     }
-    public ToDoItem updateToDoItem(int id, ToDoItem td){
-        Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
+    public Sprint updateSprint(int id, Sprint td){
+        Optional<Sprint> toDoItemData = SprintRepository.findById(id);
         if(toDoItemData.isPresent()){
-            ToDoItem toDoItem = toDoItemData.get();
-            toDoItem.setID(id);
-            toDoItem.setCreation_ts(td.getCreation_ts());
-            toDoItem.setDescription(td.getDescription());
-            toDoItem.setDone(td.isDone());
-            return toDoItemRepository.save(toDoItem);
+            Sprint Sprint = toDoItemData.get();
+            Sprint.setId(id);
+            Sprint.setTitle(td.getTitle());
+            Sprint.setStatus(td.getStatus());
+            Sprint.setStartDate(td.getStartDate());
+            Sprint.setEndDate(td.getEndDate());
+            Sprint.setTeamID(td.getTeamID());
+
+            return SprintRepository.save(Sprint);
         }else{
             return null;
         }
