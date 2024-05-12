@@ -14,6 +14,6 @@ spring:
     user:
       name: Team25
       password: Team250$1478
-oracle:
-  wallet-location: /home/javs/Documents/University/Semestre6/OracleJavaBot25/MtdrSpring/wallet
+Oracle:
+  wallet-location: OracleJavaBot25\MtdrSpring\wallet
 
