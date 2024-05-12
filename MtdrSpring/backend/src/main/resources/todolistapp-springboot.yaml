@@ -8,10 +8,9 @@ spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
 
-  ports:
-    - port: 81
-      protocol: TCP
-      targetPort: 8081
+ ports:
+    - port: 80
+      targetPort: 8080
   selector:
     app: todolistapp-springboot
 ---
@@ -25,7 +24,7 @@ spec:
     app: todolistapp-springboot
   ports:
     - protocol: TCP
-      port: 81
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -52,6 +51,8 @@ spec:
               value: "TODOUSER"
             - name: db_url
               value: "jdbc:oracle:thin:@%TODO_PDB_NAME%_tp?TNS_ADMIN=/mtdrworkshop/creds"
+            - name: todo.table.name
+              value: "todoitem"
             - name: driver_class_name
               value: "oracle.jdbc.OracleDriver"
             - name: OCI_REGION
@@ -74,7 +75,7 @@ spec:
             - name: creds
               mountPath: /mtdrworkshop/creds
           ports:
-            - containerPort: 8081
+            - containerPort: 8080
       restartPolicy: Always
       volumes:
         - name: creds
