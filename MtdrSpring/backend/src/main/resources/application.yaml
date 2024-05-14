@@ -3,7 +3,7 @@ spring:
     driver-class-name: oracle.jdbc.OracleDriver
     password: Team250T1478
     url: spring.datasource.url=jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.mx-queretaro-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=gac52f4256f44f9_oraclebotmyuc7_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
-    username: ADMIN    
+    username: TODOUSER‎    
   jpa:
     database: ORACLE
     database-platform: org.hibernate.dialect.Oracle12cDialect
@@ -13,7 +13,7 @@ spring:
   security:
     user:
       name: Team25
-      password: Team250$1478
+      password: Team250T1478
 Oracle:
   wallet-location: OracleJavaBot25\MtdrSpring\wallet
 
