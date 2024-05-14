@@ -2,14 +2,13 @@ package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
 
-
 @Entity
 @Table(name = "SPRINT")
 public class Sprint {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    private Long ID; 
+    private Long id; 
 
     @Column(name = "TITLE")
     private String title;
@@ -17,11 +16,11 @@ public class Sprint {
     @Column(name = "STATUS")
     private String status;
 
-   @Column(name = "START_DATE")
-    private String startDate; 
+    @Column(name = "STARTDATE")
+    private java.sql.Timestamp startDate; 
 
-    @Column(name = "END_DATE")
-    private String endDate; 
+    @Column(name = "ENDDATE")
+    private java.sql.Timestamp endDate; 
 
     @ManyToOne
     @JoinColumn(name = "TEAMID", referencedColumnName = "id")
@@ -31,7 +30,7 @@ public class Sprint {
     public Sprint() {   
     }
 
-    public Sprint(String title, String status, String startDate, String endDate, Team teamID) {
+    public Sprint(String title, String status, java.sql.Timestamp startDate, java.sql.Timestamp endDate, Team teamID) {
         this.title = title;
         this.status = status;
         this.startDate = startDate;
@@ -39,12 +38,12 @@ public class Sprint {
         this.teamID = teamID;
     }
 
-    public long getId() {
-        return ID;
+    public Long getId() {
+        return id;
     }
 
-    public void setId(long ID) {
-        this.ID = ID;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -63,19 +62,19 @@ public class Sprint {
         this.status = status;
     }
 
-    public String getStartDate() {
+    public java.sql.Timestamp getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(java.sql.Timestamp startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public java.sql.Timestamp getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(java.sql.Timestamp endDate) {
         this.endDate = endDate;
     }
 
@@ -90,7 +89,7 @@ public class Sprint {
     @Override
     public String toString() {
         return "Sprint{" +
-                "ID=" + ID +
+                "id=" + id +
                 ", title='" + title + '\'' +
                 ", status='" + status + '\'' +
                 ", startDate=" + startDate +
@@ -99,4 +98,3 @@ public class Sprint {
                 '}';
     }
 }
-
