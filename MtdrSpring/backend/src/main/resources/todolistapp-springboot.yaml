@@ -8,8 +8,9 @@ spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
 
- ports:
+  ports:
     - port: 80
+      protocol: TCP
       targetPort: 8080
   selector:
     app: todolistapp-springboot
