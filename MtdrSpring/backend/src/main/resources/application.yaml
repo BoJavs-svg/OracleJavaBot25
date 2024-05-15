@@ -2,7 +2,7 @@ spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
     password: Team250T1478
-    url: spring.datasource.url=jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.mx-queretaro-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=gac52f4256f44f9_oraclebote6bb3_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+    url: spring.datasource.url=jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.mx-queretaro-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=gac52f4256f44f9_oraclebotfo7oj_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
     username: TODOUSER‎    
   jpa:
     database: ORACLE
