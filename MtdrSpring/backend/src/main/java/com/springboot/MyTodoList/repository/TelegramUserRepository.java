@@ -15,12 +15,12 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 @Transactional
 public interface TelegramUserRepository extends JpaRepository<TelegramUser, Long> {
-    boolean existsByAccount(Long accountID);
+    boolean existsByAccount(String account);
 
     @Query(value = "SELECT * FROM TELEGRAMUSER", nativeQuery = true)
     List<TelegramUser> getAllUsers();
 
     @Query(value = "SELECT * FROM TELEGRAMUSER WHERE account = ?1", nativeQuery = true)
-    List<TelegramUser> findByAccount(Long accountID);
+    List<TelegramUser> findByAccount(String account);
 
 }
