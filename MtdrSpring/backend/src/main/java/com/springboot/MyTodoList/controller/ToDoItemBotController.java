@@ -90,8 +90,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
-			message.setChatId(chatId);
-			message.setText("Mensaje recibido " + user_username);
 			try{
 				execute(message);
 			}catch(TelegramApiException e){
