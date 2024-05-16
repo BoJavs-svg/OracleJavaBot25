@@ -38,8 +38,8 @@ public class TelegramUserController {
     }
     
     @GetMapping("/{accountID}")
-    public ResponseEntity<Boolean> userExistsByAccount(@PathVariable Long accountID) {
-        return ResponseEntity.ok(telegramUserService.userExists(accountID));
+    public ResponseEntity<Boolean> userExistsByAccount(@PathVariable String account) {
+        return ResponseEntity.ok(telegramUserService.userExists(account));
     }
 
     @GetMapping("/{id}")

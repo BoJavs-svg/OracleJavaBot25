@@ -16,7 +16,7 @@ public class TelegramUser {
     private String name;
 
     @Column(name = "ACCOUNT")
-    private Long account;
+    private String account;
 
     @Column(name = "ROL")
     private String rol;
@@ -25,7 +25,7 @@ public class TelegramUser {
      public TelegramUser(){
 
      }
-     public TelegramUser(String name, Long account, String rol){
+     public TelegramUser(String name, String account, String rol){
         this.name = name;
         this.account = account;
         this.rol = rol;
@@ -48,11 +48,11 @@ public class TelegramUser {
         this.name = name;
     }
 
-    public Long getAccount() {
+    public String getAccount() {
         return account;
     }
 
-    public void setAccount(Long account) {
+    public void setAccount(String account) {
         this.account = account;
     }
 

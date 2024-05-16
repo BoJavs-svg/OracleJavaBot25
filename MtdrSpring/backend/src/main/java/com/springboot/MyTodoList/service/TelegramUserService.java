@@ -41,14 +41,14 @@ public class TelegramUserService {
         }
     }
 
-    public boolean userExists(Long accountID){
-        return telegramUserRepository.existsByAccount(accountID);
+    public boolean userExists(String account){
+        return telegramUserRepository.existsByAccount(account);
     }
     public Optional<TelegramUser> getUser(Long id) {
         return telegramUserRepository.findById(id);
     }
-    public Optional<TelegramUser> getUserbyAccount (Long accountID){
-        return telegramUserRepository.findByAccount(accountID).stream().findFirst();
+    public Optional<TelegramUser> getUserbyAccount (String account){
+        return telegramUserRepository.findByAccount(account).stream().findFirst();
     }
     public Optional<TelegramUser> findById(Long id){
         return telegramUserRepository.findById(id);
