@@ -45,6 +45,8 @@ import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 
+import oracle.security.o3logon.a;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -124,7 +126,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
 				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
 					Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
-					if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+					if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Please enter the task description:");
@@ -134,15 +136,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
 						}
-					} else {
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Only a manager can add tasks.");
-						try {
-							execute(messageToTelegram);
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
-						}					}
+					}
 		}else if (messageTextFromTelegram.equals(BotCommands.CHECK_TASKS.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.CHECK_MY_TASKS.getLabel())){
 			try{
@@ -177,14 +171,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText("User created");
-					execute(messageToTelegram);
 					userMap.put(chatId,null);
 					userStates.put(chatId, null);
 					messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
-					markupKB(user_username);
 					execute(messageToTelegram);				
+					markupKB(user_username);
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
@@ -223,48 +216,34 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Task tempTask = new Task();
 				tempTask.setDescription(messageTextFromTelegram);
 				tempTask.setStatus("NotStarted");
-				tempTasks.put(chatId, tempTask);
-			
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText("Please enter the user ID:");
-				try {
-					execute(messageToTelegram);
-					userStates.put(chatId, "WAITING_FOR_ASSIGNED");
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
-			}else if(userStates.get(chatId).equals("WAITING_FOR_ASSIGNED")){
-				Task tempTask = tempTasks.get(chatId);
-				try {
-					Long userId = Long.parseLong(messageTextFromTelegram);
-					//Get USer by id
-					Optional<TelegramUser> assigned = getUserbyId(userId);
-					if (assigned.isPresent()) {
-						tempTask.setUser(assigned.get());
+				Optional<TelegramUser> assigned = telegramUserService.getUserbyAccount(user_username);
+				if(assigned.isPresent()){
+					tempTask.setUser(assigned.get());
+					tempTasks.put(chatId, tempTask);
+					
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the user ID:");
+					try {
+						execute(messageToTelegram);
 						userStates.put(chatId, "WAITING_FOR_SPRINT_ASSIGN");
-			
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the sprint ID:");
-						execute(messageToTelegram);
-					}else{
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Invalid User");
-						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
 					}
-				} catch (NumberFormatException e) {
-					logger.error("Invalid user ID format: " + messageTextFromTelegram);
-					// Send a message indicating that the user ID format is invalid
-				} catch (TelegramApiException e) {
-					logger.error("Error in assign"+e.getLocalizedMessage(), e);
+				}else{
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("An error has occured");
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
 				}
-
-			}}
+			}
 		}
-	}
-
+	}}
+	
 	@Override
 	public String getBotUsername() {		
 		return botName;
@@ -323,11 +302,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		KeyboardRow row = new KeyboardRow();
 		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
 		Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(username);
-		
 		// Check if the user exists
 		if (userOpt.isPresent()) {
 			TelegramUser user = userOpt.get();
-			
 			if ("Manager".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.ADD_NEW_TASK.getLabel());
 			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
