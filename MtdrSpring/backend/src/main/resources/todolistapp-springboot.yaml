@@ -15,7 +15,6 @@ spec:
   selector:
     app: todolistapp-springboot
 ---
-#this is new stuff for hosting on the load balancer
 apiVersion: v1
 kind: Service
 metadata:
@@ -45,19 +44,19 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
+          image: mx-queretaro-1.ocir.io/axolyk6ak3ol/oraclebot/p8hws/todolistapp-springboot:0.1
           imagePullPolicy: Always
           env:
             - name: db_user
               value: "TODOUSER"
             - name: db_url
-              value: "jdbc:oracle:thin:@%TODO_PDB_NAME%_tp?TNS_ADMIN=/mtdrworkshop/creds"
+              value: "jdbc:oracle:thin:@oraclebotp8hws_tp?TNS_ADMIN=/mtdrworkshop/creds"
             - name: todo.table.name
               value: "todoitem"
             - name: driver_class_name
               value: "oracle.jdbc.OracleDriver"
             - name: OCI_REGION
-              value: "%OCI_REGION%"
+              value: "mx-queretaro-1"
             - name: dbpassword
               valueFrom:
                 secretKeyRef:
@@ -65,7 +64,7 @@ spec:
                   key: dbpassword
                   optional: true
             - name: ui_username
-              value: "%UI_USERNAME%"
+              value: "Team"
             - name: ui_password
               valueFrom:
                 secretKeyRef:
@@ -89,4 +88,3 @@ spec:
           labelSelector:
             matchLabels:
               app: todolistapp-springboot
----
