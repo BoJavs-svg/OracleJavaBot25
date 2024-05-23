@@ -45,6 +45,8 @@ import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 
+import oracle.security.o3logon.a;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -90,8 +92,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
-			message.setChatId(chatId);
-			message.setText("Mensaje recibido " + user_username);
 			try{
 				execute(message);
 			}catch(TelegramApiException e){
@@ -126,7 +126,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
 				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
 					Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
-					if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+
+					if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Please enter the task description:");
@@ -136,15 +137,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
 						}
-					} else {
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Only a manager can add tasks.");
-						try {
-							execute(messageToTelegram);
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
-						}					}
+					}
 		}else if (messageTextFromTelegram.equals(BotCommands.CHECK_TASKS.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.CHECK_MY_TASKS.getLabel())){
 			try{
@@ -238,35 +231,73 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			}else if(userStates.get(chatId).equals("WAITING_FOR_ASSIGNED")){
 				Task tempTask = tempTasks.get(chatId);
-				try {
-					Long userId = Long.parseLong(messageTextFromTelegram);
-					//Get USer by id
-					Optional<TelegramUser> assigned = getUserbyId(userId);
-					if (assigned.isPresent()) {
-						tempTask.setUser(assigned.get());
-						userStates.put(chatId, "WAITING_FOR_SPRINT_ASSIGN");
-			
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the sprint ID:");
-						execute(messageToTelegram);
-					}else{
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Invalid User");
-						execute(messageToTelegram);
-					}
-				} catch (NumberFormatException e) {
-					logger.error("Invalid user ID format: " + messageTextFromTelegram);
-					// Send a message indicating that the user ID format is invalid
-				} catch (TelegramApiException e) {
-					logger.error("Error in assign"+e.getLocalizedMessage(), e);
-				}
-
 			}}
 		}
 	}
 
+			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ASSIGN")){
+				Task tempTask = tempTasks.get(chatId);
+				try {
+				Long sprintId = Long.parseLong(messageTextFromTelegram);
+				// Optional<Sprint> sprint = getSprintfromId(sprintId);
+				List<Sprint> sprints = getAllSprints();
+				if (sprints.isEmpty()){
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Invalid Sprint try again");
+					execute(messageToTelegram);
+
+				}else{					
+					tempTask.setSprint(sprints.get(0));
+
+					taskService.saveTask(tempTask); // Save the task to the database
+					logger.info("Task created");
+
+					tempTasks.put(chatId,null); // Remove the temp task
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Task added successfully!");
+					execute(messageToTelegram);
+				}
+				} catch (NumberFormatException e) {
+					logger.error("Invalid sprint ID format: " + messageTextFromTelegram);
+					// Send a message indicating that the sprint ID format is invalid
+				} catch (TelegramApiException e) {
+					logger.error("Error in assign"+e.getLocalizedMessage(), e);
+				}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
+				Task tempTask = new Task();
+				tempTask.setDescription(messageTextFromTelegram);
+				tempTask.setStatus("NotStarted");
+				Optional<TelegramUser> assigned = telegramUserService.getUserbyAccount(user_username);
+				if(assigned.isPresent()){
+					tempTask.setUser(assigned.get());
+					tempTasks.put(chatId, tempTask);
+					
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the user ID:");
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, "WAITING_FOR_SPRINT_ASSIGN");
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}else{
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("An error has occured");
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
+			}
+		}
+	}}
+	
 	@Override
 	public String getBotUsername() {		
 		return botName;
@@ -325,11 +356,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		KeyboardRow row = new KeyboardRow();
 		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
 		Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(username);
-		
 		// Check if the user exists
 		if (userOpt.isPresent()) {
 			TelegramUser user = userOpt.get();
-			
 			if ("Manager".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.ADD_NEW_TASK.getLabel());
 			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
