@@ -115,7 +115,8 @@
                             <goal>npm</goal>
                         </goals>
                     </execution>
-                    <execution>
+                    <!-- Dont run start  in the build -->
+					<!-- <execution>
                         <id>npm run start</id>
                         <goals>
                             <goal>npm</goal>
@@ -123,15 +124,32 @@
                         <configuration>
                             <arguments>run start</arguments>
                         </configuration>
-                    </execution>
+                    </execution> -->
                 </executions>
             </plugin>
-			 <!-- Removed the maven-resources-plugin execution related to copying non-existent build resources -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>include-api-static-assets</id>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<phase>prepare-package</phase>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/api-static</outputDirectory>
+							<resources>
+								<resource>
+									<directory>public</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
