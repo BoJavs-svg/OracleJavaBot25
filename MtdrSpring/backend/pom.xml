@@ -115,16 +115,6 @@
                             <goal>npm</goal>
                         </goals>
                     </execution>
-                    <!-- Dont run start  in the build -->
-					<!-- <execution>
-                        <id>npm run start</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run start</arguments>
-                        </configuration>
-                    </execution> -->
                 </executions>
             </plugin>
 			<plugin>
