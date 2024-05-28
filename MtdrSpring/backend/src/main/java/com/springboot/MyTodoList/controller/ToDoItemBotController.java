@@ -114,7 +114,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 						execute(messageToTelegram);
-						markupKB(user_username);
+						markupKB(user_username,chatId);
 					}catch (Exception e){
 						
 					}
@@ -173,7 +173,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 					execute(messageToTelegram);				
-					markupKB(user_username);
+					markupKB(user_username,chatId);
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
@@ -291,9 +291,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	//Markup keyboard
-	public void markupKB(String username) {
+	public void markupKB(String username, Long chatId) {
 		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-		
 		List<KeyboardRow> keyboard = new ArrayList<>();
 		KeyboardRow row = new KeyboardRow();
 		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
@@ -311,8 +310,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		keyboard.add(row);
 		keyboardMarkup.setKeyboard(keyboard);
 		SendMessage messageToTelegram = new SendMessage();
+		messageToTelegram.setChatId(chatId);
 		messageToTelegram.setReplyMarkup(keyboardMarkup);
-		
 		try {
 				execute(messageToTelegram);
 		} catch (TelegramApiException e) {
