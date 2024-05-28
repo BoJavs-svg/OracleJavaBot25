@@ -92,11 +92,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
-			try{
-				execute(message);
-			}catch(TelegramApiException e){
-				logger.error("Error en mensaje recibido");
-			}
+			
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(user_username);
