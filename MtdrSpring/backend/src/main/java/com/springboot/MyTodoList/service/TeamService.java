@@ -50,7 +50,6 @@ public class TeamService {
             // Assuming Team has setters for all fields
             teamToUpdate.setName(updatedTeam.getName());
             teamToUpdate.setDescription(updatedTeam.getDescription());
-            teamToUpdate.setManagerID(updatedTeam.getManagerID());
             // Add other fields as necessary
             return teamRepository.save(teamToUpdate);
         } else {
