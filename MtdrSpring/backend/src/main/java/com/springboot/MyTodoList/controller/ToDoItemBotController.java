@@ -299,7 +299,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Please enter the sprint Start date\nformat: dd-mm-aaaa");
+					messageToTelegram.setText("Please enter the sprint Start date\nformat: aaaa-dd-mm");
 					try {
 						execute(messageToTelegram);
 						userStates.put(chatId, "WAITING_FOR_SPRINT_STARTDATE");
@@ -311,7 +311,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					Sprint tempSprint = new Sprint();
 					Timestamp ts = strToTimestamp(messageTextFromTelegram);
 					if(ts.equals(null)){
-						message.setText("Error: invalid date. PLease enter Start date again.\nformat: dd-mm-aaaa");
+						message.setText("Error: invalid date. PLease enter Start date again.\nformat: aaaa-dd-mm");
 						try{
 							execute(message);
 						}catch(TelegramApiException e){
@@ -323,7 +323,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter the sprint End date\nformat: dd-mm-aaaa:");
+						messageToTelegram.setText("Please enter the sprint End date\nformat: aaaa-dd-mm:");
 						try {
 							execute(messageToTelegram);
 							userStates.put(chatId, "WAITING_FOR_SPRINT_ENDDATE");
@@ -337,7 +337,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					Sprint tempSprint = new Sprint();
 					Timestamp ts = strToTimestamp(messageTextFromTelegram);
 					if(ts.equals(null)){
-						message.setText("Error: invalid date. PLease enter Start date again.\nformat: dd-mm-aaaa");
+						message.setText("Error: invalid date. PLease enter Start date again.\nformat: aaaa-dd-mm");
 						try{
 							execute(message);
 						}catch(TelegramApiException e){
@@ -474,7 +474,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 	public Timestamp strToTimestamp(String dateString) {
 		// String dateString = "2024-01-26 12:30:45";
-		dateString = dateString + "00:00:00";
+		dateString = dateString + " 00:00:00";
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try {
 			java.util.Date parsedDate = dateFormat.parse(dateString);
