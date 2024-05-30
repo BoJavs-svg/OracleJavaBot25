@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
+import org.hibernate.jdbc.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,16 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
+			if(user_username.isEmpty()|| user_username.isBlank()){
+				try{
+					message.setChatId(chatId);
+					message.setText("You dont have a username, please finish setting up your telegram account, before using the BOT");
+					execute(message);
+				}catch(TelegramApiException e){
+					logger.error(e.getLocalizedMessage());
+				}
+				return;
+			}
 			
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
@@ -123,12 +134,27 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
 					Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
 					if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
+						try {
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Please enter the task description:");
-						try {
+							Task tempTask = new Task();
+							tempTask.setUser(userOpt.get());
+							tempTasks.put(chatId, tempTask);	
 							execute(messageToTelegram);
 							userStates.put(chatId, "WAITING_FOR_TASK_DESCRIPTION");
+
+						} catch (Exception e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Hi! This command is for Developers. You can add tasks to your team using /manageraddtask or using LABEL ");
+						try {
+							execute(messageToTelegram);
+							userStates.put(chatId, null);
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
 						}
@@ -138,16 +164,52 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			try{
 				Long id = telegramUserService.getUserbyAccount(user_username).get().getId();
 				List<Task> tasks = taskService.getTasksByUserId(id);
-				String tasksString = tasksToString(tasks); // Convert tasks to string
+				String t = "";
+				for(Task task : tasks){
+					t+=(task.toString()+"\n");
+				}
 
 				SendMessage messageToTelegram = new SendMessage();
 				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(tasksString); // Set the tasks string as the message text
+				messageToTelegram.setText(t); // Set the tasks string as the message text
 
 				execute(messageToTelegram); // Send the message
 			}catch (Exception e){
 				logger.error("Error fetching tasks for user", e);
 
+			}
+		}else if (messageTextFromTelegram.equals(BotCommands.FINISH_TASK.getCommand())
+		|| messageTextFromTelegram.equals(BotLabels.FINISH_TASK.getLabel())){
+			try{
+				Long id = telegramUserService.getUserbyAccount(user_username).get().getId();
+				List<Task> tasks = taskService.getTasksByUserId(id);
+				String t = "";
+				// Convert tasks to keyboard buttons
+				List<KeyboardRow> keyboardRows = new ArrayList<>();
+				for (Task task : tasks) {
+					KeyboardRow row = new KeyboardRow();
+					row.add(task.getId().toString()); // Assuming Task has a getTitle() method that returns a readable title
+					keyboardRows.add(row);
+					t+=task.toString() + "\n";
+				}
+		
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				
+				// Create a ReplyKeyboardMarkup object and set the keyboard
+				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				keyboardMarkup.setKeyboard(keyboardRows);
+				keyboardMarkup.setOneTimeKeyboard(true); // Optional: Makes the keyboard appear once per session
+				keyboardMarkup.setResizeKeyboard(true); // Optional: Resizes the keyboard to fit the text entered
+				keyboardMarkup.setSelective(true); // Optional: Allows the user to interact with the keyboard even if the focus is elsewhere
+				
+				// Attach the markup to the SendMessage object
+				messageToTelegram.setReplyMarkup(keyboardMarkup);
+				messageToTelegram.setText(t+"\nSelect a task to finish from the markup keyboard:");
+				execute(messageToTelegram);
+				userStates.put(chatId,"WAITING_FOR_COMPLETED_TASK");
+			}catch (Exception e){
+				logger.error(e.getLocalizedMessage(), e);
 			}
 		}else{
 			//States
@@ -163,7 +225,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					TelegramUser temp= userMap.get(chatId);
 					TelegramUser newTelegramUser = new TelegramUser(temp.getName(),user_username,messageTextFromTelegram);
 					ResponseEntity entity = saveUser(newTelegramUser,chatId);		
-					
+				
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText("User created");
@@ -177,65 +239,96 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
-			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ASSIGN")){
+			
+			
+			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ASSIGN")) {
 				Task tempTask = tempTasks.get(chatId);
 				try {
-				Long sprintId = Long.parseLong(messageTextFromTelegram);
-				// Optional<Sprint> sprint = getSprintfromId(sprintId);
-				List<Sprint> sprints = getAllSprints();
-				if (sprints.isEmpty()){
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Invalid Sprint try again");
-					execute(messageToTelegram);
+					Long sprintId = Long.parseLong(messageTextFromTelegram);
+					Optional<Sprint> sprint = sprintService.getSprintById(sprintId);
+					if (!sprint.isPresent()) { 
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Invalid Sprint ID. Please try again.");
+						execute(messageToTelegram);
+					} else {
+						Sprint assignedSprint = sprint.get(); 
+						tempTask.setSprint(assignedSprint); 
+						taskService.saveTask(tempTask); 	
 
-				}else{					
-					tempTask.setSprint(sprints.get(0));
-
-					taskService.saveTask(tempTask); // Save the task to the database
-					logger.info("Task created");
-
-					tempTasks.put(chatId,null); // Remove the temp task
-
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Task added successfully!");
-					execute(messageToTelegram);
-				}
+						tempTasks.remove(chatId);
+						SendMessage successMessage = new SendMessage();
+						successMessage.setChatId(chatId);
+						successMessage.setText("Task added successfully to sprint!");
+						execute(successMessage);
+					}
 				} catch (NumberFormatException e) {
-					logger.error("Invalid sprint ID format: " + messageTextFromTelegram);
-					// Send a message indicating that the sprint ID format is invalid
+					logger.error("Invalid sprint ID format: {}. Error: {}", messageTextFromTelegram, e.getMessage());
 				} catch (TelegramApiException e) {
-					logger.error("Error in assign"+e.getLocalizedMessage(), e);
+					logger.error("Error executing command: {}. Error: {}", e.getMessage(), e);
 				}
 			}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
-				Task tempTask = new Task();
-				tempTask.setDescription(messageTextFromTelegram);
-				tempTask.setStatus("NotStarted");
-				Optional<TelegramUser> assigned = telegramUserService.getUserbyAccount(user_username);
-				if(assigned.isPresent()){
-					tempTask.setUser(assigned.get());
-					tempTasks.put(chatId, tempTask);
-					
+				try {
+					Task tempTask = tempTasks.get(chatId);
+					tempTask.setDescription(messageTextFromTelegram);
+					tempTask.setStatus("NotStarted");
 					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Please enter the user ID:");
-					try {
-						execute(messageToTelegram);
-						userStates.put(chatId, "WAITING_FOR_SPRINT_ASSIGN");
-					} catch (TelegramApiException e) {
-						logger.error(e.getLocalizedMessage(), e);
+					List<Sprint> sprints = getAllSprints();
+					if(sprints.isEmpty()){
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("There are currently no active sprints. Please create a new sprint using /createsprint.");
+						userStates.put(chatId,null);
+					}else{
+						StringBuilder sb = new StringBuilder("Available sprints:\n");
+						List<KeyboardRow> keyboardRows = new ArrayList<>();
+						for(Sprint sprint : sprints) {
+							KeyboardRow row = new KeyboardRow();
+							row.add(sprint.getId().toString()); 
+							keyboardRows.add(row);
+							sb.append("\n" + sprint.toString());
+						}
+						sb.append("\nPlease enter the sprintID:");
+			
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText(sb.toString());
+			
+						// Create a ReplyKeyboardMarkup object and set the keyboard
+						ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+						keyboardMarkup.setKeyboard(keyboardRows);
+						keyboardMarkup.setOneTimeKeyboard(true);
+						keyboardMarkup.setResizeKeyboard(true); 
+						keyboardMarkup.setSelective(true); 
+			
+						// Attach the markup to the SendMessage object
+						messageToTelegram.setReplyMarkup(keyboardMarkup);
+						execute(messageToTelegram); 
 					}
-				}else{
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("An error has occured");
-					try {
+				userStates.put(chatId, "WAITING_FOR_SPRINT_ASSIGN");
+			}catch (TelegramApiException e) {
+				logger.error(e.getLocalizedMessage(), e);
+			}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_COMPLETED_TASK")){
+				try {
+					Long taskId = Long.parseLong(messageTextFromTelegram);
+					Optional<Task> task = taskService.findById(taskId);
+					if(task.isPresent()){
+						Task finished = taskService.markTaskAsFinished(task.get());
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Task was marked as finished");
 						execute(messageToTelegram);
-					} catch (TelegramApiException e) {
-						logger.error(e.getLocalizedMessage(), e);
+						userStates.put(chatId, null);
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Wrong task id");
+						execute(messageToTelegram);
+			
 					}
+				}catch (Exception e){
+					logger.error(e.getLocalizedMessage(), e);
 				}
+
 			}
 		}
 	}}
@@ -312,6 +405,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		SendMessage messageToTelegram = new SendMessage();
 		messageToTelegram.setChatId(chatId);
 		messageToTelegram.setReplyMarkup(keyboardMarkup);
+		messageToTelegram.setText("Tools addes to your markup keyboard");
 		try {
 				execute(messageToTelegram);
 		} catch (TelegramApiException e) {
@@ -344,6 +438,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		KeyboardRow row = new KeyboardRow();
 		row.add("Manager");
 		row.add("Developer");
+		keyboardMarkup.setOneTimeKeyboard(true);
+		keyboardMarkup.setResizeKeyboard(true); 
+		keyboardMarkup.setSelective(true); 
 		keyboard.add(row);
 		keyboardMarkup.setKeyboard(keyboard);
 		message.setReplyMarkup(keyboardMarkup);
@@ -355,16 +452,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.error(e.getLocalizedMessage(), e);
 		}		
 	}
-	private String tasksToString(List<Task> tasks) {
-		StringBuilder sb = new StringBuilder();
-		if (tasks.isEmpty()) {
-			sb.append("You have no tasks :)").append("\n");
-		} else {
-			for (Task task : tasks) {
-				sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
-			}
-		}
-		return sb.toString();
-	}
 	
 }
+	
