@@ -7,6 +7,8 @@ public enum BotLabels {
 	LIST_ALL_ITEMS("List All Items"), 
 	ADD_NEW_TASK("Add New Task"),
 	CHECK_MY_TASKS("Check My Tasks"),
+	UPDATE_TASK("Update Task"),
+	CREATE_TEAM("Create Team"),
 	DONE("DONE"),
 	UNDO("UNDO"),
 	DELETE("DELETE"),
