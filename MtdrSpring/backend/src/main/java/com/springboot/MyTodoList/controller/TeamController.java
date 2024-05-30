@@ -18,8 +18,17 @@ public class TeamController {
     private TeamService teamService;
 
     @PostMapping
-    public Team createTeam(@RequestBody Team team) {
-        return teamService.addTeam(team);
+    public ResponseEntity<Team> createTeam(@RequestBody Team team) {
+        try{
+            Team savedTeam = teamService.addTeam(team);
+            if(savedTeam != null){
+                return new ResponseEntity<>(savedTeam, HttpStatus.CREATED);
+            }else{
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping

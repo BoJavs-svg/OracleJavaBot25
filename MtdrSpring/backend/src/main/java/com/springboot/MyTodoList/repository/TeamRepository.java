@@ -16,4 +16,9 @@ import org.springframework.data.jpa.repository.Query;
 @Transactional
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
+    @Query(value = "SELECT * FROM TEAM", nativeQuery = true)
+    List<Team> getAllTeams();
+
+    @Query(value = "SELECT * FROM TEAM WHERE teamid = ?1", nativeQuery = true)
+    List<Team> findByTeamId(Long teamId);
 }

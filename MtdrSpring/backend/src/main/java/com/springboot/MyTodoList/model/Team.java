@@ -20,10 +20,6 @@ public class Team implements Serializable {
     @Column(name = "DESCRIPTION", nullable = false, length = 4000)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "MANAGERID", nullable = false,  referencedColumnName = "id")
-    private TelegramUser managerID;
-
     // Constructor vacío
     public Team() {}
 
@@ -31,7 +27,7 @@ public class Team implements Serializable {
     public Team(String name, String description, TelegramUser managerID) {
         this.name = name;
         this.description = description;
-        this.managerID = managerID;
+
     }
 
     // Getters y Setters
@@ -58,15 +54,7 @@ public class Team implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public TelegramUser getManagerID() {
-        return managerID;
-    }
-
-    public void setManagerID(TelegramUser managerID) {
-        this.managerID = managerID;
-    }
-
+        
     // Sobrescribir toString para facilitar la depuración
     @Override
     public String toString() {
@@ -74,7 +62,6 @@ public class Team implements Serializable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", managerID=" + managerID.toString() +
                 '}';
     }
 }
