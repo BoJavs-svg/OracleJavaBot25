@@ -69,7 +69,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	@Autowired
 	private SprintService sprintService;
 	@Autowired
-	private SprintService teamService;
+	private TeamService teamService;
 
 
 	private String botName;
@@ -349,14 +349,41 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("");
+						messageToTelegram.setText("Please enter Team ID:");
 						try {
 							execute(messageToTelegram);
-							userStates.put(chatId, "WAITING_FOR_SPRINT_");
+							userStates.put(chatId, "WAITING_FOR_SPRINT_TEAMID");
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
 						}
 					}
+				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TEAMID")){
+					Sprint tempSprint = new Sprint();
+					Optional<Team> t = teamService.getTeamById(Long.parseLong(messageTextFromTelegram));
+					if(t.isPresent()){
+						// t.get();
+						tempSprint.setTeamID(t.get());
+					} else {
+						message.setText("Error: Invalid Team ID");
+						try{
+							execute(message);
+						}catch(TelegramApiException e){
+							logger.error("Error en mensaje recibido");
+						}
+					}
+					
+					tempSprints.put(chatId, tempSprint);
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Sprint added succsesfully!");
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, null);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+
 				}
 			}
 		}
