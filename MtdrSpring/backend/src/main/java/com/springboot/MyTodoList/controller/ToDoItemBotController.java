@@ -87,6 +87,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		this.telegramUserService=telegramUserService;
 		this.taskService = taskService;
 		this.sprintService=sprintService;
+		this.teamService=teamService;
 	}
 	@Override
 	public void onUpdateReceived(Update update) {
@@ -293,7 +294,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 					}
 				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_STATUS")){
-					Sprint tempSprint = new Sprint();
+					Sprint tempSprint = tempSprints.get(chatId);
 					tempSprint.setStatus(messageTextFromTelegram);
 					tempSprints.put(chatId, tempSprint);
 
@@ -308,7 +309,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 
 				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_STARTDATE")){
-					Sprint tempSprint = new Sprint();
+					Sprint tempSprint = tempSprints.get(chatId);
 					Timestamp ts = strToTimestamp(messageTextFromTelegram);
 					if(ts.equals(null)){
 						logger.error("EL mensaje n ocuadra con el formato de fecha");
@@ -337,7 +338,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 
 				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ENDDATE")){
-					Sprint tempSprint = new Sprint();
+					Sprint tempSprint = tempSprints.get(chatId);
 					Timestamp ts = strToTimestamp(messageTextFromTelegram);
 					if(ts.equals(null)){
 						SendMessage messageToTelegram = new SendMessage();
@@ -363,34 +364,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 					}
 				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TEAMID")){
-					Sprint tempSprint = new Sprint();
-					// Optional<Team> t = teamService.getTeamById(Long.parseLong(messageTextFromTelegram));
-					// if(t.isPresent()){
-						// tempSprint.setTeamID(t.get());
-					// } else {
-					// 	SendMessage messageToTelegram = new SendMessage();
-					// 	messageToTelegram.setChatId(chatId);
-					// 	messageToTelegram.setText("Error: Invalid Team ID");
-					// 	try{
-					// 		execute(message);
-					// 	}catch(TelegramApiException e){
-					// 		logger.error("Error en mensaje recibido");
-					// 	}
-					// }
-					List<Team> teams = getAllTeams();
-					if(teams.isEmpty()){
-						logger.info("No hay Teams en la BD");
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("There was a Team here. Is gone now.");
-						try {
-							execute(messageToTelegram);
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
-						}	
-					}else{
-						logger.info("Sí hay Teams en la BD??? wtf entonces por qué no me deja meterlo? aAAAAAAAA");
-						tempSprint.setTeamID(teams.get(0));
+					Sprint tempSprint = tempSprints.get(chatId);
+					Optional<Team> t = teamService.getTeamById(Long.parseLong(messageTextFromTelegram));
+					if(t.isPresent()){
+						tempSprint.setTeamID(t.get());
 						sprintService.addSprint(tempSprint); // Save the Sprint to the database
 						logger.info("Sprint created");
 
@@ -398,14 +375,51 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Task added successfully!");
+						messageToTelegram.setText("Sprint added successfully!");
 						userStates.put(chatId, null);
 						try {
 							execute(messageToTelegram);
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
-						}	
+						}
+					} else {
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Error: Invalid Team ID");
+						try{
+							execute(message);
+						}catch(TelegramApiException e){
+							logger.error("Error en mensaje recibido");
+						}
 					}
+					// List<Team> teams = getAllTeams();
+					// if(teams.isEmpty()){
+					// 	logger.info("No hay Teams en la BD");
+					// 	SendMessage messageToTelegram = new SendMessage();
+					// 	messageToTelegram.setChatId(chatId);
+					// 	messageToTelegram.setText("There was a Team here. Is gone now.");
+					// 	try {
+					// 		execute(messageToTelegram);
+					// 	} catch (TelegramApiException e) {
+					// 		logger.error(e.getLocalizedMessage(), e);
+					// 	}	
+					// }else{
+						// logger.info("Sí hay Teams en la BD??? wtf entonces por qué no me deja meterlo? aAAAAAAAA");
+						// tempSprint.setTeamID(teams.get(0));
+						// sprintService.addSprint(tempSprint); // Save the Sprint to the database
+						// logger.info("Sprint created");
+
+						// tempSprints.put(chatId,null); // Remove the temp task
+
+						// SendMessage messageToTelegram = new SendMessage();
+						// messageToTelegram.setChatId(chatId);
+						// messageToTelegram.setText("Sprint added successfully!");
+						// userStates.put(chatId, null);
+						// try {
+						// 	execute(messageToTelegram);
+						// } catch (TelegramApiException e) {
+						// 	logger.error(e.getLocalizedMessage(), e);
+						// }	
 				}
 			}
 		}
