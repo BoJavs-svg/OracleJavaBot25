@@ -8,6 +8,8 @@ public enum BotLabels {
 	ADD_NEW_TASK("Add New Task"),
 	CHECK_MY_TASKS("Check My Tasks"),
 	CREATE_SPRINT("Create New Sprint"),
+	VIEW_ALL_SPRINT_TASKS("View All Sprint Tasks"),
+	DELETE_SPRINT("Delete Sprint"),
 
 
 	DONE("DONE"),

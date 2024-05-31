@@ -171,7 +171,28 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error(e.getLocalizedMessage(), e);
 					}
 				// }
-
+			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_ALL_SPRINT_TASKS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_ALL_SPRINT_TASKS.getLabel())){
+				// SendMessage messageToTelegram = new SendMessage();
+				// messageToTelegram.setChatId(chatId);
+				// messageToTelegram.setText("Please enter the sprint title:");
+				// try {
+				// 	execute(messageToTelegram);
+				// 	userStates.put(chatId, "WAITING_FOR_SPRINT_TITLE");
+				// } catch (TelegramApiException e) {
+				// 	logger.error(e.getLocalizedMessage(), e);
+				// }
+			}else if(messageTextFromTelegram.equals(BotCommands.DELETE_SPRINT.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.DELETE_SPRINT.getLabel())){
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the sprint ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_SPRINT_ID");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
 
 			}else{
 				//States
@@ -263,9 +284,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					} catch (TelegramApiException e) {
 						logger.error("Error in assign"+e.getLocalizedMessage(), e);
 					}
-
-				// SPRINT
-				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TITLE")){
+				}
+				
+				// Create SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TITLE")){
 					Sprint tempSprint = new Sprint();
 					tempSprint.setTitle(messageTextFromTelegram);
 					// tempSprint.setStatus("NotStarted");
@@ -392,34 +414,31 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error("Error en mensaje recibido");
 						}
 					}
-					// List<Team> teams = getAllTeams();
-					// if(teams.isEmpty()){
-					// 	logger.info("No hay Teams en la BD");
-					// 	SendMessage messageToTelegram = new SendMessage();
-					// 	messageToTelegram.setChatId(chatId);
-					// 	messageToTelegram.setText("There was a Team here. Is gone now.");
-					// 	try {
-					// 		execute(messageToTelegram);
-					// 	} catch (TelegramApiException e) {
-					// 		logger.error(e.getLocalizedMessage(), e);
-					// 	}	
-					// }else{
-						// logger.info("Sí hay Teams en la BD??? wtf entonces por qué no me deja meterlo? aAAAAAAAA");
-						// tempSprint.setTeamID(teams.get(0));
-						// sprintService.addSprint(tempSprint); // Save the Sprint to the database
-						// logger.info("Sprint created");
-
-						// tempSprints.put(chatId,null); // Remove the temp task
-
-						// SendMessage messageToTelegram = new SendMessage();
-						// messageToTelegram.setChatId(chatId);
-						// messageToTelegram.setText("Sprint added successfully!");
-						// userStates.put(chatId, null);
-						// try {
-						// 	execute(messageToTelegram);
-						// } catch (TelegramApiException e) {
-						// 	logger.error(e.getLocalizedMessage(), e);
-						// }	
+				}
+				// View SPRINT
+				// Delete SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ID")){
+					try {
+						Long sprintId = Long.parseLong(messageTextFromTelegram);
+						Optional<Sprint> sprint = getSprintfromId(sprintId);
+						if (sprint.isPresent()) {
+							sprintService.deleteSprint(sprintId);
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Sprint deleted successfully!");
+							execute(messageToTelegram);
+						} else {
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Invalid Sprint ID. Try again");
+							execute(messageToTelegram);
+						}
+					} catch (NumberFormatException e) {
+						logger.error("Invalid sprint ID format: " + messageTextFromTelegram);
+						// Send a message indicating that the sprint ID format is invalid
+					} catch (TelegramApiException e) {
+						logger.error("Error in delete"+e.getLocalizedMessage(), e);
+					}
 				}
 			}
 		}
