@@ -1,5 +1,7 @@
 package com.springboot.MyTodoList.util;
 
+import javax.ws.rs.DELETE;
+
 public enum BotLabels {
 	
 	SHOW_MAIN_SCREEN("Show Main Screen"), 
@@ -13,7 +15,8 @@ public enum BotLabels {
 	UNDO("UNDO"),
 	DELETE("DELETE"),
 	MY_TODO_LIST("MY TODO LIST"),
-	DASH("-");
+	DASH("-"),
+	DELETE_TEAM("Delete Team");
 
 	private String label;
 

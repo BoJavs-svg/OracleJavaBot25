@@ -163,6 +163,20 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 			}
+		}else if(messageTextFromTelegram.equals(BotCommands.DELETE_TEAM.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.DELETE_TEAM.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_ID");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
 		}
 		
 		else{
@@ -283,6 +297,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 			}	
+
+			else if(userStates.get(chatId).equals("WAITING_FOR_TEAM_ID")){
+				try{
+					Long teamId = Long.parseLong(messageTextFromTelegram);
+					Optional<Team> team = teamService.getTeamById(teamId);
+					if(team.isPresent()){
+						teamService.deleteTeam(teamId);
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Team deleted successfully!");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Invalid team ID");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				}catch(NumberFormatException e){
+					logger.error("Invalid team ID format: " + messageTextFromTelegram);
+					// Send a message indicating that the team ID format is invalid
+				}
+			}
 		}
 	}}
 	
@@ -343,7 +387,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			// Return a 500 Internal Server Error
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving Team");
 		}
-	
+	}
+
+	public ResponseEntity deleteTeam(@RequestBody Team team){
+		try{
+			teamService.deleteTeam(team.getId());
+		}catch (Exception e){
+			// Log the exception or handle it as needed
+			System.err.println("Error saving Team: " + e.getMessage());
+			// Return a 500 Internal Server Error
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting Team");
+		}
+		return ResponseEntity.ok().build();
 	}
 
 	public Optional<TelegramUser> getUserbyId(long id){
