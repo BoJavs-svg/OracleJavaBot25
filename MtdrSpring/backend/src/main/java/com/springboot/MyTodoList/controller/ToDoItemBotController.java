@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 // import java.util.Date;
 import java.util.ArrayList;
@@ -171,17 +172,75 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error(e.getLocalizedMessage(), e);
 					}
 				// }
+			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_SPRINT_TASKS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())){
+				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+				if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())){
+					List<Task> tasks = sprintService.getDevCurrentSprintTasks(userOpt.get().getId());
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(tasksToString(tasks));
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+
+				} else if(userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())){
+					if(userOpt.get().getTeam().equals(null)){ // Si manager no tiene un Team
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					} else{
+						List<Task> tasks = sprintService.getMagCurrentSprintTasks(userOpt.get().getTeam().getId());
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText(tasksToString(tasks));
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+					
+				} else {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Seems like you don't have a role...");
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				}
 			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_ALL_SPRINT_TASKS.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.VIEW_ALL_SPRINT_TASKS.getLabel())){
 				// SendMessage messageToTelegram = new SendMessage();
 				// messageToTelegram.setChatId(chatId);
-				// messageToTelegram.setText("Please enter the sprint title:");
+				// messageToTelegram.setText("Please select an option:\n /viewallsprinttasks\n /viewonesprinttasks");
 				// try {
 				// 	execute(messageToTelegram);
-				// 	userStates.put(chatId, "WAITING_FOR_SPRINT_TITLE");
+				// 	// userStates.put(chatId, "WAITING_FOR_SPRINT_VIEW_OPT");
 				// } catch (TelegramApiException e) {
 				// 	logger.error(e.getLocalizedMessage(), e);
 				// }
+			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_ONE_SPRINT_TASKS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_ONE_SPRINT_TASKS.getLabel())){
+				// SendMessage messageToTelegram = new SendMessage();
+				// messageToTelegram.setChatId(chatId);
+				// messageToTelegram.setText("Please select an option:\n /viewallsprinttasks\n /viewonesprinttasks");
+				// try {
+				// 	execute(messageToTelegram);
+				// 	// userStates.put(chatId, "WAITING_FOR_SPRINT_VIEW_OPT");
+				// } catch (TelegramApiException e) {
+				// 	logger.error(e.getLocalizedMessage(), e);
+				// }
+			
 			}else if(messageTextFromTelegram.equals(BotCommands.DELETE_SPRINT.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.DELETE_SPRINT.getLabel())){
 				SendMessage messageToTelegram = new SendMessage();
@@ -189,7 +248,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				messageToTelegram.setText("Please enter the sprint ID:");
 				try {
 					execute(messageToTelegram);
-					userStates.put(chatId, "WAITING_FOR_SPRINT_ID");
+					userStates.put(chatId, "WAITING_FOR_DEL_SPRINT_ID");
 				} catch (TelegramApiException e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
@@ -285,7 +344,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error("Error in assign"+e.getLocalizedMessage(), e);
 					}
 				}
-				
+
 				// Create SPRINT
 				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TITLE")){
 					Sprint tempSprint = new Sprint();
@@ -415,9 +474,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 					}
 				}
-				// View SPRINT
+				// View SPRINT (Current)
+				// WAITING_FOR_SPRINT_VIEW_OPT
 				// Delete SPRINT
-				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ID")){
+				else if(userStates.get(chatId).equals("WAITING_FOR_DEL_SPRINT_ID")){
 					try {
 						Long sprintId = Long.parseLong(messageTextFromTelegram);
 						Optional<Sprint> sprint = getSprintfromId(sprintId);
