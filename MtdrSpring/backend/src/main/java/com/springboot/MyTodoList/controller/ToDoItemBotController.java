@@ -176,10 +176,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			|| messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())){
 				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
 				if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())){
-					List<Task> tasks = sprintService.getDevCurrentSprintTasks(userOpt.get().getId());
+					List<String> tasks = sprintService.getDevCurrentSprintTasks(userOpt.get().getId());
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText(tasksToString(tasks));
+					messageToTelegram.setText("Sprint: " + sprintService.getCurrentSprint().getTitle() +"\n"+ ListStrToStr(tasks));
 					try {
 						execute(messageToTelegram);
 					} catch (TelegramApiException e) {
@@ -197,10 +197,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error(e.getLocalizedMessage(), e);
 						}
 					} else{
-						List<Task> tasks = sprintService.getMagCurrentSprintTasks(userOpt.get().getTeam().getId());
+						List<String> tasks = sprintService.getMagCurrentSprintTasks(userOpt.get().getTeam().getId());
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText(tasksToString(tasks));
+						messageToTelegram.setText("Sprint: " + sprintService.getCurrentSprint().getTitle() +"\n"+ ListStrToStr(tasks));
 						try {
 							execute(messageToTelegram);
 						} catch (TelegramApiException e) {
@@ -589,7 +589,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	// String to Timestamp format
-
 	public Timestamp strToTimestamp(String dateString) {
 		// String dateString = "2024-01-26 12:30:45";
 		dateString = dateString + " 00:00:00";
@@ -604,6 +603,19 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	// List<String> to String
+	public String ListStrToStr(List<String> lst) {
+		StringBuilder sb = new StringBuilder();
+		if (lst.isEmpty()) {
+			sb.append("You have no tasks :)").append("\n");
+		} else {
+			for (String s : lst) {
+				sb.append(s).append("\n"); 
+			}
+		}
+		return sb.toString();
 	}
 
 	//Prompts

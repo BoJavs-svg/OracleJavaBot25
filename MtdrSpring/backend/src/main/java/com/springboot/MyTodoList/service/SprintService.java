@@ -27,15 +27,19 @@ public class SprintService {
         this.sprintRepository=sprintRepository;
     }
 
-    public List<Task> getMagCurrentSprintTasks(Long teamID){ // Team
+    public List<String> getMagCurrentSprintTasks(Long teamID){ // Team
         return sprintRepository.getMagCurrentSprintTasks(teamID);
     }
-    public List<Task> getDevCurrentSprintTasks(Long user){ // Telegramuser
+    public List<String> getDevCurrentSprintTasks(Long user){ // Telegramuser
         return sprintRepository.getDevCurrentSprintTasks(user);
     }
 
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
+    }
+
+    public Sprint getCurrentSprint(){
+        return sprintRepository.getCurrentSprint();
     }
 
     public Optional<Sprint> getSprintById(Long id) {
