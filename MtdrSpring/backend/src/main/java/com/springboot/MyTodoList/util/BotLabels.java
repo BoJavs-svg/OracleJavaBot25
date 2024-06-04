@@ -16,6 +16,8 @@ public enum BotLabels {
 	DELETE("DELETE"),
 	MY_TODO_LIST("MY TODO LIST"),
 	DASH("-"),
+	VIEW_TEAM_TASKS("View Team Tasks"),
+	EDIT_TEAM("Edit Team"),
 	DELETE_TEAM("Delete Team");
 
 	private String label;

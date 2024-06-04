@@ -29,9 +29,9 @@ public enum BotCommands {
     	EDIT_TASK("/edittask"),
     	FINISH_TASK("/finishtask"),
     	VIEW_USER_TASKS("/viewusertasks"),
-	VIEW_DEVELOPER_TASKS("/mytasks"),
-	VIEW_TASK("/viewtask"),
-	DELETE_TASK("/deletetask");
+		VIEW_DEVELOPER_TASKS("/mytasks"),
+		VIEW_TASK("/viewtask"),
+		DELETE_TASK("/deletetask");
 
 	private String command;
 

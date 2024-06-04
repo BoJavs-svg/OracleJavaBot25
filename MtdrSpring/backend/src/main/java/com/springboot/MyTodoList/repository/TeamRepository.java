@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.repository;
 
 
+import com.springboot.MyTodoList.model.Task;
 import com.springboot.MyTodoList.model.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -24,4 +25,5 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query(value = "SELECT id FROM TEAM WHERE name = ?1", nativeQuery = true)
     List<Team> findIdByTeamName(String teamName);
+    
 }
