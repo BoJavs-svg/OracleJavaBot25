@@ -16,7 +16,7 @@ public enum BotCommands {
     	CREATE_SPRINT("/createsprint"),
     	VIEW_SPRINT_TASKS("/viewsprinttasks"),
 		VIEW_ALL_SPRINT_TASKS("/viewallsprinttasks"),
-		VIEW_ONE_SPRINT_TASKS("/viewonesprinttasks"),
+		// VIEW_ONE_SPRINT_TASKS("/viewonesprinttasks"),
     	EDIT_SPRINT("/editsprint"),
     	DELETE_SPRINT("/deletesprint"),
 

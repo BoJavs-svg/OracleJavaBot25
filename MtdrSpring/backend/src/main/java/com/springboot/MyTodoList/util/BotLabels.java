@@ -10,7 +10,7 @@ public enum BotLabels {
 	CREATE_SPRINT("Create New Sprint"),
 	VIEW_SPRINT_TASKS("View Current Sprint Tasks"),
 	VIEW_ALL_SPRINT_TASKS("View All Sprint Tasks"),
-	VIEW_ONE_SPRINT_TASKS("View One Sprint Tasks"),
+	// VIEW_ONE_SPRINT_TASKS("View One Sprint Tasks"),
 	DELETE_SPRINT("Delete Sprint"),
 
 

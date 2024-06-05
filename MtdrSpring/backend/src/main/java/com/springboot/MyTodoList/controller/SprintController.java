@@ -28,6 +28,11 @@
             return sprintService.findAll();
         }
 
+        @GetMapping
+        public List<Sprint> getTeamSprints(@PathVariable Long teamId) {
+            return sprintService.getTeamSprints(teamId);
+        }
+
         @GetMapping("/{sprintId}")
         public Optional<Sprint> getSprintById(@PathVariable Long sprintId) {
             return sprintService.getSprintById(sprintId);

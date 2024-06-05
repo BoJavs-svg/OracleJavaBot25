@@ -5,6 +5,7 @@ import com.springboot.MyTodoList.model.Task;
 import com.springboot.MyTodoList.model.Team;
 import com.springboot.MyTodoList.model.TelegramUser;
 import com.springboot.MyTodoList.repository.SprintRepository;
+import com.springboot.MyTodoList.repository.TaskRepository;
 
 import oracle.security.crypto.cert.SPKAC;
 
@@ -22,24 +23,20 @@ import java.util.Optional;
 public class SprintService {
 
     @Autowired
-    private SprintRepository sprintRepository;
+    private static SprintRepository sprintRepository;
     public SprintService(SprintRepository sprintRepository){
         this.sprintRepository=sprintRepository;
     }
 
-    public List<String> getMagCurrentSprintTasks(Long teamID){ // Team
-        return sprintRepository.getMagCurrentSprintTasks(teamID);
-    }
-    public List<String> getDevCurrentSprintTasks(Long user){ // Telegramuser
-        return sprintRepository.getDevCurrentSprintTasks(user);
-    }
+    // public List<String> getMagCurrentSprintTasks(Long teamID){ // Team
+    //     return sprintRepository.getMagCurrentSprintTasks(teamID);
+    // }
+    public List<Sprint> getTeamSprints(Long team_id){
+        return sprintRepository.getTeamSprints(team_id);
+    } 
 
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
-    }
-
-    public Sprint getCurrentSprint(){
-        return sprintRepository.getCurrentSprint();
     }
 
     public Optional<Sprint> getSprintById(Long id) {
@@ -59,6 +56,7 @@ public class SprintService {
             return false;
         }
     }
+     
 
     public Sprint updateSprint(Long id, Sprint updatedSprint) {
         Optional<Sprint> existingSprint = sprintRepository.findById(id);

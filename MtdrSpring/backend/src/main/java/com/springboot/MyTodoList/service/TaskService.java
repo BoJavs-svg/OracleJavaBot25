@@ -2,6 +2,8 @@ package com.springboot.MyTodoList.service;
 
 import com.springboot.MyTodoList.model.Task;
 import com.springboot.MyTodoList.repository.TaskRepository;
+import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.repository.SprintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -25,5 +27,8 @@ public class TaskService {
     }
     public List<Task> getTasksByUserId(Long userId) {
         return taskRepository.findByUserId(userId);
+    }
+    public List<Task> getTasksBySprintId(Long sprintId) {
+        return taskRepository.findBySprintId(sprintId);
     }
 }
