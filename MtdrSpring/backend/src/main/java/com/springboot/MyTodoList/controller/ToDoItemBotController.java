@@ -209,15 +209,25 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 			}else if(messageTextFromTelegram.equals(BotCommands.DELETE_SPRINT.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.DELETE_SPRINT.getLabel())){
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText("Please enter the sprint ID:");
-				try {
-					execute(messageToTelegram);
-					userStates.put(chatId, "WAITING_FOR_DEL_SPRINT_ID");
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+				try{
+					Long teamId = userOpt.get().getTeam().getId();
+					List<Sprint> sprints = sprintService.getTeamSprints(teamId);
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i < sprints.size(); i++) {
+						Sprint s = sprints.get(i);
+						sb.append("\n"+s.getId() + ": " + s.getTitle());
+					}
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the sprint ID: \n"+sb.toString());
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, "WAITING_FOR_DEL_SPRINT_ID");
+					} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+
+				}catch (Exception e){logger.error("Error fetching sprints for user", e);}
 
 			}else{
 				//States
