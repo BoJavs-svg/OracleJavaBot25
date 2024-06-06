@@ -48,4 +48,16 @@
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
+
+        @DeleteMapping("/title/{sprintTitle}") // Assuming this is the title of the sprint 
+        public ResponseEntity<Void> deleteSprintByTitle(@PathVariable String sprintTitle) {
+            boolean isDeleted = sprintService.deleteSprintByTitle(sprintTitle);
+            if (isDeleted) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+
     }

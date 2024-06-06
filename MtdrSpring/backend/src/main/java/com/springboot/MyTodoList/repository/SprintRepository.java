@@ -11,9 +11,10 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.Query;
+import java.util.Optional;
 
 @Repository
 @Transactional
 public interface SprintRepository extends JpaRepository<Sprint, Long> {
-
+    Optional<Sprint> findByTitle(String title);
 }

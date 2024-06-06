@@ -2,6 +2,7 @@ package com.springboot.MyTodoList.service;
 
 import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.repository.SprintRepository;
+import com.springboot.MyTodoList.repository.TaskRepository;
 
 import oracle.security.crypto.cert.SPKAC;
 
@@ -24,6 +25,9 @@ public class SprintService {
         this.sprintRepository=sprintRepository;
     }
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     public List<Sprint> findAll() {
         return sprintRepository.findAll();
     }
@@ -37,11 +41,32 @@ public class SprintService {
         return sprintRepository.save(sprint);
     }
 
+    public Optional<Sprint> getSprintByTitle(String title) {
+        return sprintRepository.findByTitle(title);
+    }
+
+    public void deleteTasksBySprintId(Long sprintId) {
+        taskRepository.deleteBySprintId(sprintId);
+    }
+
+
     public boolean deleteSprint(Long id) {
         try {
             sprintRepository.deleteById(id);
             return true;
         } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean deleteSprintByTitle(String title) {
+        Optional<Sprint> sprintOpt = getSprintByTitle(title);
+        if (sprintOpt.isPresent()) {
+            Long sprintId = sprintOpt.get().getId();
+            deleteTasksBySprintId(sprintId); // Eliminar tareas
+            sprintRepository.deleteById(sprintId); // Eliminar sprint
+            return true;
+        } else {
             return false;
         }
     }
