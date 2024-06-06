@@ -78,6 +78,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private Map<Long, TelegramUser> userMap = new HashMap<>();
 	private Map<Long,Task> tempTasks = new HashMap<>();
 	private Map<Long,Sprint> tempSprints = new HashMap<>();
+	private Map<Long,List<Sprint>> tempSSprints = new HashMap<>();
 
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, TelegramUserService telegramUserService,TaskService taskService,SprintService sprintService,TeamService teamService) {
 		super(botToken);
@@ -175,71 +176,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_SPRINT_TASKS.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())){
 				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
-				if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())){
-					List<String> tasks = sprintService.getDevCurrentSprintTasks(userOpt.get().getId());
+				if(userOpt.get().getTeam().equals(null)){ // Si user no tiene un Team
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Sprint: " + sprintService.getCurrentSprint().getTitle() +"\n"+ ListStrToStr(tasks));
+					messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.\nYou must be in a Team to crete Sprints.");
 					try {
 						execute(messageToTelegram);
 					} catch (TelegramApiException e) {
 						logger.error(e.getLocalizedMessage(), e);
 					}
-
-				} else if(userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())){
-					if(userOpt.get().getTeam().equals(null)){ // Si manager no tiene un Team
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.");
-						try {
-							execute(messageToTelegram);
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
-						}
-					} else{
-						List<String> tasks = sprintService.getMagCurrentSprintTasks(userOpt.get().getTeam().getId());
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Sprint: " + sprintService.getCurrentSprint().getTitle() +"\n"+ ListStrToStr(tasks));
-						try {
-							execute(messageToTelegram);
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
-						}
-					}
-					
 				} else {
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("Seems like you don't have a role...");
-					try {
-						execute(messageToTelegram);
-					} catch (TelegramApiException e) {
-						logger.error(e.getLocalizedMessage(), e);
+					try{
+						Long teamId = userOpt.get().getTeam().getId();
+						List<Sprint> sprints = sprintService.getTeamSprints(teamId);
+						tempSSprints.put(chatId, sprints);
+						String sprintlist = SprintListToStr(sprints); // Convert Sprint list to string
+	
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please select a Sprint: [enter a number]\n"+ sprintlist);
+	
+						try {
+							execute(messageToTelegram);
+							// userStates.put(chatId, "WAITING_FOR_SPRINT_OPT");
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}catch (Exception e){
+						logger.error("Error fetching sprints for user", e);
 					}
 				}
-			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_ALL_SPRINT_TASKS.getCommand())
-			|| messageTextFromTelegram.equals(BotLabels.VIEW_ALL_SPRINT_TASKS.getLabel())){
-				// SendMessage messageToTelegram = new SendMessage();
-				// messageToTelegram.setChatId(chatId);
-				// messageToTelegram.setText("Please select an option:\n /viewallsprinttasks\n /viewonesprinttasks");
-				// try {
-				// 	execute(messageToTelegram);
-				// 	// userStates.put(chatId, "WAITING_FOR_SPRINT_VIEW_OPT");
-				// } catch (TelegramApiException e) {
-				// 	logger.error(e.getLocalizedMessage(), e);
-				// }
-			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_ONE_SPRINT_TASKS.getCommand())
-			|| messageTextFromTelegram.equals(BotLabels.VIEW_ONE_SPRINT_TASKS.getLabel())){
-				// SendMessage messageToTelegram = new SendMessage();
-				// messageToTelegram.setChatId(chatId);
-				// messageToTelegram.setText("Please select an option:\n /viewallsprinttasks\n /viewonesprinttasks");
-				// try {
-				// 	execute(messageToTelegram);
-				// 	// userStates.put(chatId, "WAITING_FOR_SPRINT_VIEW_OPT");
-				// } catch (TelegramApiException e) {
-				// 	logger.error(e.getLocalizedMessage(), e);
-				// }
 			
 			}else if(messageTextFromTelegram.equals(BotCommands.DELETE_SPRINT.getCommand())
 			|| messageTextFromTelegram.equals(BotLabels.DELETE_SPRINT.getLabel())){
@@ -638,6 +604,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 		return sb.toString();
 	}
+
+	// List of Sprints to String names
+	public String SprintListToStr(List<Sprint> sprintList) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i=0; i < sprintList.size(); i++) {
+            stringBuilder.append((i + 1) + ": " + sprintList.get(i).getTitle());
+            if (i < sprintList.size() - 1) {
+                stringBuilder.append("\n"); // Agregar un salto de línea si no es el último elemento
+            }
+        }
+        return stringBuilder.toString();
+    }
 
 	//Prompts
 	public void promptForUserInformation(long chatId) {
