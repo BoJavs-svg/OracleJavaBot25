@@ -3,6 +3,7 @@ package com.springboot.MyTodoList.model;
 import javax.persistence.*;
 
 
+
 @Entity
 @Table(name = "TELEGRAMUSER")
 public class TelegramUser {
@@ -21,6 +22,10 @@ public class TelegramUser {
     @Column(name = "ROL")
     private String rol;
     
+    @ManyToOne
+    @JoinColumn(name = "TEAMID",  referencedColumnName = "id")
+    private Team teamID;
+
      //Constructor
      public TelegramUser(){
 
@@ -64,6 +69,12 @@ public class TelegramUser {
         this.rol = rol;
     }
 
+    public void setTeam(Team team) {
+        this.teamID = team;
+    }
+    public Team getTeam() {
+        return this.teamID;
+    }
 
     @Override
     public String toString(){

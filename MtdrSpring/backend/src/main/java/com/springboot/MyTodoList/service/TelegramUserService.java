@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.service;
 
 import java.util.Optional;
+import java.util.List;
 
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,11 @@ public class TelegramUserService {
     public Optional<TelegramUser> findById(Long id){
         return telegramUserRepository.findById(id);
     }
+
+    public List<TelegramUser> getUsersByTeamID(Long teamID){
+        return telegramUserRepository.findByTeamId(teamID);
+    }
+
     public TelegramUser updateTelegramUser(Long id, TelegramUser updatedUser){
         Optional<TelegramUser> userOptional = telegramUserRepository.findById(id);
         if(userOptional.isPresent()){

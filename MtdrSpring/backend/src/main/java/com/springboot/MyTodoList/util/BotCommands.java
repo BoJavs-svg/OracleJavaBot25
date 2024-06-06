@@ -23,6 +23,7 @@ public enum BotCommands {
     	VIEW_TEAM_TASKS("/viewteamtasks"),
     	EDIT_TEAM("/editteam"),
     	DELETE_TEAM("/deleteteam"),
+		VIEW_TEAM_MEMBERS("/viewteammembers"),
 	
     	// Task Commands
     	CREATE_TASK("/createtask"),
