@@ -434,15 +434,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						tempSprint.setEndDate(ts);
 						tempSprints.put(chatId, tempSprint);
 
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Please enter Team ID:");
-						try {
-							execute(messageToTelegram);
-							userStates.put(chatId, "WAITING_FOR_SPRINT_TEAMID");
-						} catch (TelegramApiException e) {
-							logger.error(e.getLocalizedMessage(), e);
+						Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+						if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please enter Team ID:");
+							try {
+								execute(messageToTelegram);
+								userStates.put(chatId, "WAITING_FOR_SPRINT_TEAMID"); // Solo Manager puede llegar a este estado
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						} else {
+							Team t = userOpt.get().getTeam();
+							tempSprint.setTeamID(t);
+							sprintService.addSprint(tempSprint); // Save the Sprint to the database
+							logger.info("Sprint created");						
+							
+							tempSprints.put(chatId,null); // Remove the temp task
+
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Sprint added successfully!");
+							userStates.put(chatId, null);
+							try {
+								execute(messageToTelegram);
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
 						}
+
 					}
 				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TEAMID")){
 					Sprint tempSprint = tempSprints.get(chatId);
@@ -475,7 +496,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					}
 				}
 				// View SPRINT (Current)
-				// WAITING_FOR_SPRINT_VIEW_OPT
+				// WAITING_FOR_SPRINT_VIEW_OPT}
 				// Delete SPRINT
 				else if(userStates.get(chatId).equals("WAITING_FOR_DEL_SPRINT_ID")){
 					try {
