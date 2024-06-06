@@ -485,7 +485,28 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 							if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
 								// Manager puede ver todos los tasks del Sprint del equipo
-								// Hacer una lista de los usuarios de Team y de ahí hacer lo mismo que con Dev
+								try{
+									List<TelegramUser> teamUsers = telegramUserService.getTeamUsers(userOpt.get().getTeam().getId());
+
+									for(int j=0; j<teamUsers.size(); j++){
+										StringBuilder sb3 = new StringBuilder();
+
+										List<Task> tasks = taskService.getTasksByUserId(teamUsers.get(j).getId());
+										for(Integer i=0; i<tasks.size(); i++){
+											if(tasks.get(i).getSprint().getId().equals(sprint.getId())){
+												Task t = tasks.get(i);
+												sb3.append(t.getDescription()+" - "+t.getStatus()+"\n");
+											}
+										}
+										if(sb3.isEmpty()){
+											sb3.append("No tasks added for this Sprint");
+										}
+										sb2.append(teamUsers.get(j).getName()+":\n"+sb3.toString()+"\n\n");
+									}
+								} catch (Exception e){
+									logger.error("Error fetching sprints for user", e);
+								}
+
 							} else { // Para Dev
 								// Dev solo puede ver sus tasks del Sprint
 								try{
