@@ -198,7 +198,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	
 						try {
 							execute(messageToTelegram);
-							// userStates.put(chatId, "WAITING_FOR_SPRINT_OPT");
+							userStates.put(chatId, "WAITING_FOR_SPRINT_OPT");
 						} catch (TelegramApiException e) {
 							logger.error(e.getLocalizedMessage(), e);
 						}
@@ -461,8 +461,56 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 					}
 				}
-				// View SPRINT (Current)
-				// WAITING_FOR_SPRINT_VIEW_OPT}
+				// View SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
+					if(isInt(messageTextFromTelegram)){
+						Integer opt = Integer.parseInt(messageTextFromTelegram); // selected Sprint number (index)
+						List<Sprint> sprintList = tempSSprints.get(chatId);
+						if(opt<=sprintList.size() && opt>0){
+							Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+							StringBuilder sb = new StringBuilder();
+							StringBuilder sb2 = new StringBuilder();
+							Sprint sprint = sprintList.get(opt-1);
+							sb.append("Sprint: "+sprint.getTitle()+"\nStatus: "+sprint.getStatus()+"\nStart: "+sprint.getStartDate()+"\nEnd: "+sprint.getEndDate()+"\n\n");
+
+							if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+								// Manager puede ver todos los tasks del Sprint del equipo
+								// Hacer una lista de los usuarios de Team y de ahí hacer lo mismo que con Dev
+							} else { // Para Dev
+								// Dev solo puede ver sus tasks del Sprint
+								try{
+									List<Task> tasks = taskService.getTasksByUserId(userOpt.get().getId());
+									for(Integer i=0; i<tasks.size(); i++){
+										if(tasks.get(i).getSprint().getId().equals(sprint.getId())){
+											Task t = tasks.get(i);
+											sb2.append(t.getDescription()+" - "+t.getStatus()+"\n");
+										}
+									}
+									if(sb2.isEmpty()){
+										sb2.append("No tasks added for this Sprint");
+									}
+								}catch (Exception e){
+									logger.error("Error fetching sprints for user", e);
+								}
+							}
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText(sb.toString()+sb2.toString());
+							try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+						}else{
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please select a number from the Sprint list");
+							try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+						}
+					} else {
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter a number");
+						try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+					}
+				}
+				
 				// Delete SPRINT
 				else if(userStates.get(chatId).equals("WAITING_FOR_DEL_SPRINT_ID")){
 					try {
@@ -470,6 +518,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						Optional<Sprint> sprint = getSprintfromId(sprintId);
 						if (sprint.isPresent()) {
 							sprintService.deleteSprint(sprintId);
+							userStates.put(chatId, null);
 							SendMessage messageToTelegram = new SendMessage();
 							messageToTelegram.setChatId(chatId);
 							messageToTelegram.setText("Sprint deleted successfully!");
@@ -615,6 +664,16 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
             }
         }
         return stringBuilder.toString();
+    }
+
+	// Validarque un mensaje pueda convertirse a Int
+	public boolean isInt(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 	//Prompts
