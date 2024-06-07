@@ -1,5 +1,6 @@
 package com.springboot.MyTodoList.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -49,6 +50,9 @@ public class TelegramUserService {
     }
     public Optional<TelegramUser> getUserbyAccount (String account){
         return telegramUserRepository.findByAccount(account).stream().findFirst();
+    }
+    public List<TelegramUser> getTeamUsers(Long team_id){
+        return telegramUserRepository.findByTeam(team_id);
     }
     public Optional<TelegramUser> findById(Long id){
         return telegramUserRepository.findById(id);

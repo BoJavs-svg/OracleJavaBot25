@@ -20,7 +20,6 @@ public class Team implements Serializable {
     @Column(name = "DESCRIPTION", nullable = false, length = 4000)
     private String description;
 
-
     // Constructor vacío
     public Team() {}
 
@@ -28,7 +27,7 @@ public class Team implements Serializable {
     public Team(String name, String description, TelegramUser managerID) {
         this.name = name;
         this.description = description;
-        
+
     }
 
     // Getters y Setters

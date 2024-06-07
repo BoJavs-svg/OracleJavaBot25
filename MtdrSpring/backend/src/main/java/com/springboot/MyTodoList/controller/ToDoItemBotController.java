@@ -1,10 +1,17 @@
+// mvn spring-boot:run
+
 package com.springboot.MyTodoList.controller;
 
 import static org.mockito.ArgumentMatchers.booleanThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+// import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,14 +73,16 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	@Autowired
 	private SprintService sprintService;
 	@Autowired
-	private SprintService teamService;
-	
+	private TeamService teamService;
+
 
 	private String botName;
 	private Map<Long, String> userStates = new HashMap<>();
-	private Map<Long, TelegramUser> userMap = new HashMap<>();	
+	private Map<Long, TelegramUser> userMap = new HashMap<>();
 	private Map<Long,Task> tempTasks = new HashMap<>();
-	
+	private Map<Long,Sprint> tempSprints = new HashMap<>();
+	private Map<Long,List<Sprint>> tempSSprints = new HashMap<>();
+
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, TelegramUserService telegramUserService,TaskService taskService,SprintService sprintService,TeamService teamService) {
 		super(botToken);
 		logger.info("Bot Token: " + botToken);
@@ -83,6 +92,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		this.telegramUserService=telegramUserService;
 		this.taskService = taskService;
 		this.sprintService=sprintService;
+		this.teamService=teamService;
 	}
 	@Override
 	public void onUpdateReceived(Update update) {
@@ -95,6 +105,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 			logger.info("Received message ("+chatId+"): " + messageTextFromTelegram);
 			SendMessage message = new SendMessage();
+
 			if(user_username.isEmpty()|| user_username.isBlank()){
 				try{
 					message.setChatId(chatId);
@@ -107,7 +118,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			}
 			
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
+				|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 				ResponseEntity<Boolean> response = findIfExists(user_username);
 				logger.info("Response status code "+response.getBody());
 				if (!response.getBody()) {
@@ -140,7 +151,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error("Error: ", e);
 					}
 				}
-		}else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
+			} else if (messageTextFromTelegram.equals(BotCommands.ADD_TASK.getCommand())
 				|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_TASK.getLabel())){
 					Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
 					if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
@@ -168,7 +179,94 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error(e.getLocalizedMessage(), e);
 						}
 					}
-		}else if (messageTextFromTelegram.equals(BotCommands.EDIT_TASK.getCommand())
+
+      }else if (messageTextFromTelegram.equals(BotCommands.CHECK_TASKS.getCommand())
+				|| messageTextFromTelegram.equals(BotLabels.CHECK_MY_TASKS.getLabel())){
+				try{
+					Long id = telegramUserService.getUserbyAccount(user_username).get().getId();
+					List<Task> tasks = taskService.getTasksByUserId(id);
+					String tasksString = tasksToString(tasks); // Convert tasks to string
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText(tasksString); // Set the tasks string as the message text
+
+					execute(messageToTelegram); // Send the message
+				}catch (Exception e){
+					logger.error("Error fetching tasks for user", e);
+
+				}
+			} else if(messageTextFromTelegram.equals(BotCommands.CREATE_SPRINT.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.CREATE_SPRINT.getLabel())){
+				// Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+				// if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the sprint title:");
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, "WAITING_FOR_SPRINT_TITLE");
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				// }
+			} else if(messageTextFromTelegram.equals(BotCommands.VIEW_SPRINT_TASKS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())){
+				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+				if(userOpt.get().getTeam().equals(null)){ // Si user no tiene un Team
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.\nYou must be in a Team to crete Sprints.");
+					try {
+						execute(messageToTelegram);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+				} else {
+					try{
+						Long teamId = userOpt.get().getTeam().getId();
+						List<Sprint> sprints = sprintService.getTeamSprints(teamId);
+						tempSSprints.put(chatId, sprints);
+						String sprintlist = SprintListToStr(sprints); // Convert Sprint list to string
+	
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please select a Sprint: [enter a number]\n"+ sprintlist);
+	
+						try {
+							execute(messageToTelegram);
+							userStates.put(chatId, "WAITING_FOR_SPRINT_OPT");
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}catch (Exception e){
+						logger.error("Error fetching sprints for user", e);
+					}
+				}
+			
+			}else if(messageTextFromTelegram.equals(BotCommands.DELETE_SPRINT.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.DELETE_SPRINT.getLabel())){
+				Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+				try{
+					Long teamId = userOpt.get().getTeam().getId();
+					List<Sprint> sprints = sprintService.getTeamSprints(teamId);
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i < sprints.size(); i++) {
+						Sprint s = sprints.get(i);
+						sb.append("\n"+s.getId() + ": " + s.getTitle());
+					}
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the sprint ID: \n"+sb.toString());
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, "WAITING_FOR_DEL_SPRINT_ID");
+					} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+
+				}catch (Exception e){logger.error("Error fetching sprints for user", e);}
+
+      }else if (messageTextFromTelegram.equals(BotCommands.EDIT_TASK.getCommand())
 		|| messageTextFromTelegram.equals(BotLabels.EDIT_TASK.getLabel())){
 			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
 				if (userOpt.isPresent() && "Developer".equals(userOpt.get().getRol())) {
@@ -287,10 +385,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				userStates.put(chatId,"WAITING_FOR_COMPLETED_TASK");
 			}catch (Exception e){
 				logger.error(e.getLocalizedMessage(), e);
-			}
-		}else{
-			//States
-			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
+      }
+		  
+        
+			}else{
+				//States
+				if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setName(messageTextFromTelegram);
 				telegramUser.setAccount(user_username);
@@ -334,33 +434,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}
-			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ASSIGN")) {
-				Task tempTask = tempTasks.get(chatId);
-				try {
-					Long sprintId = Long.parseLong(messageTextFromTelegram);
-					Optional<Sprint> sprint = sprintService.getSprintById(sprintId);
-					if (!sprint.isPresent()) { 
-						SendMessage messageToTelegram = new SendMessage();
-						messageToTelegram.setChatId(chatId);
-						messageToTelegram.setText("Invalid Sprint ID. Please try again.");
-						execute(messageToTelegram);
-					} else {
-						Sprint assignedSprint = sprint.get(); 
-						tempTask.setSprint(assignedSprint); 
-						taskService.saveTask(tempTask); 	
-
-						tempTasks.remove(chatId);
-						SendMessage successMessage = new SendMessage();
-						successMessage.setChatId(chatId);
-						successMessage.setText("Task added successfully to sprint!");
-						execute(successMessage);
-					}
-				} catch (NumberFormatException e) {
-					logger.error("Invalid sprint ID format: {}. Error: {}", messageTextFromTelegram, e.getMessage());
-				} catch (TelegramApiException e) {
-					logger.error("Error executing command: {}. Error: {}", e.getMessage(), e);
-				}
-			}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
+			
+				// TASK
+				}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
 				try {
 					Task tempTask = tempTasks.get(chatId);
 					tempTask.setDescription(messageTextFromTelegram);
@@ -400,6 +476,280 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			}catch (TelegramApiException e) {
 				logger.error(e.getLocalizedMessage(), e);
 			}
+				}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ASSIGN")) {
+				Task tempTask = tempTasks.get(chatId);
+				try {
+					Long sprintId = Long.parseLong(messageTextFromTelegram);
+					Optional<Sprint> sprint = sprintService.getSprintById(sprintId);
+					if (!sprint.isPresent()) { 
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Invalid Sprint ID. Please try again.");
+						execute(messageToTelegram);
+					} else {
+						Sprint assignedSprint = sprint.get(); 
+						tempTask.setSprint(assignedSprint); 
+						taskService.saveTask(tempTask); 	
+
+						tempTasks.remove(chatId);
+						SendMessage successMessage = new SendMessage();
+						successMessage.setChatId(chatId);
+						successMessage.setText("Task added successfully to sprint!");
+						execute(successMessage);
+					}
+				} catch (NumberFormatException e) {
+					logger.error("Invalid sprint ID format: {}. Error: {}", messageTextFromTelegram, e.getMessage());
+				} catch (TelegramApiException e) {
+					logger.error("Error executing command: {}. Error: {}", e.getMessage(), e);
+				}
+			
+
+				// Create SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TITLE")){
+					Sprint tempSprint = new Sprint();
+					tempSprint.setTitle(messageTextFromTelegram);
+					// tempSprint.setStatus("NotStarted");
+					Optional<TelegramUser> assigned = telegramUserService.getUserbyAccount(user_username);
+					if(assigned.isPresent()){
+						// tempSprint.setUser(assigned.get());
+						tempSprints.put(chatId, tempSprint);
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the sprint status:");
+						try {
+							execute(messageToTelegram);
+							userStates.put(chatId, "WAITING_FOR_SPRINT_STATUS");
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("An error has occured");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_STATUS")){
+					Sprint tempSprint = tempSprints.get(chatId);
+					tempSprint.setStatus(messageTextFromTelegram);
+					tempSprints.put(chatId, tempSprint);
+
+					SendMessage messageToTelegram = new SendMessage();
+					messageToTelegram.setChatId(chatId);
+					messageToTelegram.setText("Please enter the sprint Start date\nformat: aaaa-dd-mm");
+					try {
+						execute(messageToTelegram);
+						userStates.put(chatId, "WAITING_FOR_SPRINT_STARTDATE");
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+
+				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_STARTDATE")){
+					Sprint tempSprint = tempSprints.get(chatId);
+					Timestamp ts = strToTimestamp(messageTextFromTelegram);
+					if(ts.equals(null)){
+						logger.error("EL mensaje n ocuadra con el formato de fecha");
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Error: invalid date. PLease enter Start date again.\nformat: aaaa-dd-mm");
+						try{
+							execute(messageToTelegram);
+						}catch(TelegramApiException e){
+							logger.error("Error en mensaje recibido");
+						}
+					} else {
+						tempSprint.setStartDate(ts);
+						tempSprints.put(chatId, tempSprint);
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter the sprint End date\nformat: aaaa-dd-mm:");
+						try {
+							execute(messageToTelegram);
+							userStates.put(chatId, "WAITING_FOR_SPRINT_ENDDATE");
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				}
+
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_ENDDATE")){
+					Sprint tempSprint = tempSprints.get(chatId);
+					Timestamp ts = strToTimestamp(messageTextFromTelegram);
+					if(ts.equals(null)){
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Error: invalid date. PLease enter Start date again.\nformat: aaaa-dd-mm");
+						try{
+							execute(messageToTelegram);
+						}catch(TelegramApiException e){
+							logger.error("Error en mensaje recibido");
+						}
+					} else {
+						tempSprint.setEndDate(ts);
+						tempSprints.put(chatId, tempSprint);
+
+						Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+						if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please enter Team ID:");
+							try {
+								execute(messageToTelegram);
+								userStates.put(chatId, "WAITING_FOR_SPRINT_TEAMID"); // Solo Manager puede llegar a este estado
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						} else {
+							Team t = userOpt.get().getTeam();
+							tempSprint.setTeamID(t);
+							sprintService.addSprint(tempSprint); // Save the Sprint to the database
+							logger.info("Sprint created");						
+							
+							tempSprints.put(chatId,null); // Remove the temp task
+
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Sprint added successfully!");
+							userStates.put(chatId, null);
+							try {
+								execute(messageToTelegram);
+							} catch (TelegramApiException e) {
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						}
+
+					}
+				} else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_TEAMID")){
+					Sprint tempSprint = tempSprints.get(chatId);
+					Optional<Team> t = teamService.getTeamById(Long.parseLong(messageTextFromTelegram));
+					if(t.isPresent()){
+						tempSprint.setTeamID(t.get());
+						sprintService.addSprint(tempSprint); // Save the Sprint to the database
+						logger.info("Sprint created");
+
+						tempSprints.put(chatId,null); // Remove the temp task
+
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Sprint added successfully!");
+						userStates.put(chatId, null);
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					} else {
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Error: Invalid Team ID");
+						try{
+							execute(message);
+						}catch(TelegramApiException e){
+							logger.error("Error en mensaje recibido");
+						}
+					}
+				}
+				// View SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
+					if(isInt(messageTextFromTelegram)){
+						Integer opt = Integer.parseInt(messageTextFromTelegram); // selected Sprint number (index)
+						List<Sprint> sprintList = tempSSprints.get(chatId);
+						if(opt<=sprintList.size() && opt>0){
+							Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+							StringBuilder sb = new StringBuilder();
+							StringBuilder sb2 = new StringBuilder();
+							Sprint sprint = sprintList.get(opt-1);
+							sb.append("Sprint: "+sprint.getTitle()+"\nStatus: "+sprint.getStatus()+"\nStart: "+sprint.getStartDate()+"\nEnd: "+sprint.getEndDate()+"\n\n");
+
+							if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+								// Manager puede ver todos los tasks del Sprint del equipo
+								try{
+									List<TelegramUser> teamUsers = telegramUserService.getTeamUsers(userOpt.get().getTeam().getId());
+
+									for(int j=0; j<teamUsers.size(); j++){
+										StringBuilder sb3 = new StringBuilder();
+
+										List<Task> tasks = taskService.getTasksByUserId(teamUsers.get(j).getId());
+										for(Integer i=0; i<tasks.size(); i++){
+											if(tasks.get(i).getSprint().getId().equals(sprint.getId())){
+												Task t = tasks.get(i);
+												sb3.append(t.getDescription()+" - "+t.getStatus()+"\n");
+											}
+										}
+										if(sb3.isEmpty()){
+											sb3.append("No tasks added for this Sprint");
+										}
+										sb2.append(teamUsers.get(j).getName()+":\n"+sb3.toString()+"\n\n");
+									}
+								} catch (Exception e){
+									logger.error("Error fetching sprints for user", e);
+								}
+
+							} else { // Para Dev
+								// Dev solo puede ver sus tasks del Sprint
+								try{
+									List<Task> tasks = taskService.getTasksByUserId(userOpt.get().getId());
+									for(Integer i=0; i<tasks.size(); i++){
+										if(tasks.get(i).getSprint().getId().equals(sprint.getId())){
+											Task t = tasks.get(i);
+											sb2.append(t.getDescription()+" - "+t.getStatus()+"\n");
+										}
+									}
+									if(sb2.isEmpty()){
+										sb2.append("No tasks added for this Sprint");
+									}
+								}catch (Exception e){
+									logger.error("Error fetching sprints for user", e);
+								}
+							}
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText(sb.toString()+sb2.toString());
+							try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+						}else{
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Please select a number from the Sprint list");
+							try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+						}
+					} else {
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Please enter a number");
+						try {execute(messageToTelegram);} catch (TelegramApiException e) {logger.error(e.getLocalizedMessage(), e);}
+					}
+				}
+				
+				// Delete SPRINT
+				else if(userStates.get(chatId).equals("WAITING_FOR_DEL_SPRINT_ID")){
+					try {
+						Long sprintId = Long.parseLong(messageTextFromTelegram);
+						Optional<Sprint> sprint = getSprintfromId(sprintId);
+						if (sprint.isPresent()) {
+							sprintService.deleteSprint(sprintId);
+							userStates.put(chatId, null);
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Sprint deleted successfully!");
+							execute(messageToTelegram);
+						} else {
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText("Invalid Sprint ID. Try again");
+							execute(messageToTelegram);
+						}
+					} catch (NumberFormatException e) {
+						logger.error("Invalid sprint ID format: " + messageTextFromTelegram);
+						// Send a message indicating that the sprint ID format is invalid
+					} catch (TelegramApiException e) {
+						logger.error("Error in delete"+e.getLocalizedMessage(), e);
+ 
+			//States de main
 			}else if(userStates.get(chatId).equals("WAITING_FOR_COMPLETED_TASK")){
 				try {
 					Long taskId = Long.parseLong(messageTextFromTelegram);
@@ -438,17 +788,17 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText("Wrong task id");
 						execute(messageToTelegram);
-			
+
 					}
 				}catch (Exception e){
 					logger.error(e.getLocalizedMessage(), e);
 				}
 			}
 		}
-	}}
-	
+	}
+
 	@Override
-	public String getBotUsername() {		
+	public String getBotUsername() {
 		return botName;
 	}
 	//TelegramUSER
@@ -485,7 +835,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			// Return a 500 Internal Server Error
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving TelegramUser");
 		}
-	}	
+	}
 	public Optional<TelegramUser> getUserbyId(long id){
 		return telegramUserService.getUser(id);
 	}
@@ -495,6 +845,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 	public List<Sprint> getAllSprints(){
 		return sprintService.findAll();
+	}
+	public List<Team> getAllTeams(){
+		return teamService.findAll();
 	}
 
 	//Markup keyboard
@@ -513,13 +866,14 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
 			}
 		}
-		
+
 		keyboard.add(row);
 		keyboardMarkup.setKeyboard(keyboard);
 		SendMessage messageToTelegram = new SendMessage();
 		messageToTelegram.setChatId(chatId);
 		messageToTelegram.setReplyMarkup(keyboardMarkup);
 		messageToTelegram.setText("Tools addes to your markup keyboard");
+
 		try {
 				execute(messageToTelegram);
 		} catch (TelegramApiException e) {
@@ -527,9 +881,72 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.error("Error Markup Keyboard"+e.getLocalizedMessage(), e);
 		}
 	}
-	public List<Task> getTaskbyCurrentSprint(TelegramUser user){
-		List<Sprint> curreSprints = sprintService.getCurrentSprint(user.getTeam().getId());
 
+	// String to Timestamp format
+	public Timestamp strToTimestamp(String dateString) {
+		// String dateString = "2024-01-26 12:30:45";
+		dateString = dateString + " 00:00:00";
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			java.util.Date parsedDate = dateFormat.parse(dateString);
+			Timestamp timestamp = new Timestamp(parsedDate.getTime());
+			// System.out.println("Input String: " + dateString +" And It data type is"+ dateString.getClass());
+			// System.out.println("Converted Timestamp: "+ timestamp +" And It data type is "+ timestamp.getClass());
+			return timestamp;
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// List<String> to String
+	public String ListStrToStr(List<String> lst) {
+		StringBuilder sb = new StringBuilder();
+		if (lst.isEmpty()) {
+			sb.append("You have no tasks :)").append("\n");
+		} else {
+			for (String s : lst) {
+				sb.append(s).append("\n"); 
+			}
+		}
+		return sb.toString();
+	}
+
+	// List of Sprints to String names
+	public String SprintListToStr(List<Sprint> sprintList) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i=0; i < sprintList.size(); i++) {
+            stringBuilder.append((i + 1) + ": " + sprintList.get(i).getTitle());
+            if (i < sprintList.size() - 1) {
+                stringBuilder.append("\n"); // Agregar un salto de línea si no es el último elemento
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+	// Validarque un mensaje pueda convertirse a Int
+	public boolean isInt(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+	private String tasksToString(List<Task> tasks) {
+		StringBuilder sb = new StringBuilder();
+		if (tasks.isEmpty()) {
+			sb.append("You have no tasks :)").append("\n");
+		} else {
+			for (Task task : tasks) {
+				sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
+			}
+		}
+		return sb.toString();
+	}
+    public List<Task> getTaskbyCurrentSprint(TelegramUser user){
+		List<Sprint> curreSprints = sprintService.getCurrentSprint(user.getTeam().getId());
 		Set<Long> currentSprintIds = curreSprints.stream().map(Sprint::getId).collect(Collectors.toSet());
 
 		List <Task> userTasks = taskService.getTasksByUserId(user.getId());

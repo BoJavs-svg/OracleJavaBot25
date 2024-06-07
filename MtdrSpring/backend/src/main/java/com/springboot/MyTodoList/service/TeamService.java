@@ -23,7 +23,7 @@ public class TeamService {
     }
 
     public List<Team> findAll() {
-        return teamRepository.findAll();
+        return teamRepository.getAllTeams(); // antes: findAll();
     }
 
     public Optional<Team> getTeamById(Long id) {
@@ -31,7 +31,14 @@ public class TeamService {
     }
 
     public Team addTeam(Team team) {
-        return teamRepository.save(team);
+        try {
+            return teamRepository.save(team);
+        } catch (Exception e) {
+            // Log the exception or handle it as needed
+            System.err.println("Error saving Team: " + e.getMessage());
+            // Optionally, rethrow the exception or handle it differently
+            return null;
+        }
     }
 
     public boolean deleteTeam(Long id) {

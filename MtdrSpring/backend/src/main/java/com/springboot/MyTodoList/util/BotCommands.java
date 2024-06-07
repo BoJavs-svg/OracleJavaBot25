@@ -1,6 +1,7 @@
 package com.springboot.MyTodoList.util;
 
 public enum BotCommands {
+
 	  // User Commands
 	  START_COMMAND("/start"),   //      // Create user
 	  HIDE_COMMAND("/hide"),
@@ -9,7 +10,8 @@ public enum BotCommands {
   
 	  // Sprint Commands
 	  CREATE_SPRINT("/createsprint"),   // Create sprint
-	  VIEW_ALL_SPRINT_TASKS("/viewsprinttasks"), // View all sprint tasks
+	  VIEW_SPRINT_TASKS("/viewsprinttasks"),
+		VIEW_ALL_SPRINT_TASKS("/viewallsprinttasks"),
 	  EDIT_SPRINT("/editsprint"),       // Edit sprint
 	  DELETE_SPRINT("/deletesprint"),   // Delete sprint
   

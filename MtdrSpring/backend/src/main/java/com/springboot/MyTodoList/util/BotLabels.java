@@ -11,7 +11,8 @@ public enum BotLabels {
  
 	// Sprint Commands
 	CREATE_SPRINT("Create Sprint"),             // Label for /createsprint command
-	VIEW_ALL_SPRINT_TASKS("View All Sprint Tasks"), // Label for /viewsprinttasks command
+	VIEW_SPRINT_TASKS("View Current Sprint Tasks"),
+	VIEW_ALL_SPRINT_TASKS("View All Sprint Tasks"),
 	EDIT_SPRINT("Edit Sprint"),                 // Label for /editsprint command
 	DELETE_SPRINT("Delete Sprint"),             // Label for /deletesprint command
 	 
