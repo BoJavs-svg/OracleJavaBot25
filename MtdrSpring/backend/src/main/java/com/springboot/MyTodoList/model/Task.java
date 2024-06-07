@@ -76,4 +76,10 @@ public class Task {
         this.sprint = sprint;
     }
 
+    @Override
+    public String toString() {
+        return "- "+id + " " + description + " " + status;
+    }
+
+
 }

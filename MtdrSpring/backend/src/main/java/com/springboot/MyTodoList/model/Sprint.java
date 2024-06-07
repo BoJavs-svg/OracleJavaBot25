@@ -88,13 +88,6 @@ public class Sprint {
 
     @Override
     public String toString() {
-        return "Sprint{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", status='" + status + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", teamID=" + teamID.toString() +
-                '}';
+        return "- "+ id + "| " + title + "| " + status ;
     }
 }
