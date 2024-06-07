@@ -62,4 +62,8 @@ public class SprintService {
             return null;
         }
     }
+    
+    public List<Sprint> getCurrentSprint(Long teamId){
+        return sprintRepository.getCurrentSprint(teamId);
+    }
 }

@@ -15,5 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 @Transactional
 public interface SprintRepository extends JpaRepository<Sprint, Long> {
+    @Query(value = "SELECT * FROM TODOUSER.SPRINT s WHERE CURRENT_TIMESTAMP BETWEEN s.STARTDATE AND s.ENDDATE AND s.TEAMID = ?1", nativeQuery = true)
+    List<Sprint> getCurrentSprint(Long teamId);
 
 }
