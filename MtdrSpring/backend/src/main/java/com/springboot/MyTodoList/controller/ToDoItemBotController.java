@@ -82,6 +82,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private Map<Long,Task> tempTasks = new HashMap<>();
 	private Map<Long,Sprint> tempSprints = new HashMap<>();
 	private Map<Long,List<Sprint>> tempSSprints = new HashMap<>();
+	private Map<Long, Team> tempTeams = new HashMap<>();
 
 	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, TelegramUserService telegramUserService,TaskService taskService,SprintService sprintService,TeamService teamService) {
 		super(botToken);
@@ -89,7 +90,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		logger.info("Bot name: " + botName);
 		this.botName = botName;
 		this.toDoItemService = toDoItemService;
-		this.telegramUserService=telegramUserService;
+		this.telegramUserService = telegramUserService;
 		this.taskService = taskService;
 		this.sprintService=sprintService;
 		this.teamService=teamService;
@@ -141,7 +142,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						logger.error(e.getLocalizedMessage(), e);
 					}					} else {
 					try{
-
 						SendMessage messageToTelegram = new SendMessage();
 						messageToTelegram.setChatId(chatId);
 						messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
@@ -386,7 +386,81 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				logger.error(e.getLocalizedMessage(), e);
 			}
 			
-		}else{
+		}else if(messageTextFromTelegram.equals(BotCommands.CREATE_TEAM.getCommand()) 
+			|| messageTextFromTelegram.equals(BotLabels.CREATE_TEAM.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team name:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_NAME");
+					tempTeams.put(chatId, new Team());
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
+		}else if(messageTextFromTelegram.equals(BotCommands.DELETE_TEAM.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.DELETE_TEAM.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_ID");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
+		}else if(messageTextFromTelegram.equals(BotCommands.VIEW_TEAM_TASKS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_TEAM_TASKS.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_ID_TASKS");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
+		}else if(messageTextFromTelegram.equals(BotCommands.EDIT_TEAM.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.EDIT_TEAM.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_ID_EDIT");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
+		}else if(messageTextFromTelegram.equals(BotCommands.VIEW_TEAM_MEMBERS.getCommand())
+			|| messageTextFromTelegram.equals(BotLabels.VIEW_TEAM_MEMBERS.getLabel())){
+			Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(user_username);
+			if (userOpt.isPresent() && "Manager".equals(userOpt.get().getRol())) {
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team ID:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_ID_MEMBERS");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}
+
+		}
+		
+		else{
 			if (userStates.get(chatId).equals("WAITING_FOR_NAME")) {
 				TelegramUser telegramUser = userMap.get(chatId);
 				telegramUser.setName(messageTextFromTelegram);
@@ -647,7 +721,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error("Error en mensaje recibido");
 						}
 					}
-				}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
+			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
 					if(isInt(messageTextFromTelegram)){
 						Integer opt = Integer.parseInt(messageTextFromTelegram); // selected Sprint number (index)
 						List<Sprint> sprintList = tempSSprints.get(chatId);
@@ -782,9 +856,41 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}catch (Exception e){
 					logger.error(e.getLocalizedMessage(), e);
 				}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TEAM_ID_TASKS")){
+				try{
+					Long teamId = Long.parseLong(messageTextFromTelegram);
+					Optional<Team> team = teamService.getTeamById(teamId);
+					if(team.isPresent()){
+						List<TelegramUser> members = telegramUserService.getUsersByTeamID(teamId);
+						List<Task> tasks;
+						for(TelegramUser member : members){
+							tasks = taskService.getTasksByUserId(member.getId()); 
+							String tasksToString = tasksToString(tasks); // Convert tasks to string
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText(tasksToString); // Set the users string as the message text
+							try{
+								execute(messageToTelegram); // Send the message
+							}catch(TelegramApiException e){
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						}
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Invalid team ID");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				}catch(NumberFormatException e){
+					logger.error("Invalid team ID format: " + messageTextFromTelegram);
+					// Send a message indicating that the team ID format is invalid
+				}
 			}
-		}
-		}
+		}}
 	}
 	@Override
 	public String getBotUsername() {
@@ -825,6 +931,38 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving TelegramUser");
 		}
 	}
+
+	public ResponseEntity createTeam(@RequestBody Team team, long chatId){
+		try{
+			Team savedTeam = teamService.addTeam(tempTeams.get(chatId));
+			if(savedTeam != null){
+				HttpHeaders responseHeaders = new HttpHeaders();
+				responseHeaders.set("location", "" + savedTeam.getId());
+				responseHeaders.set("Access-Control-Expose-Headers", "location");
+				return ResponseEntity.ok().headers(responseHeaders).build();
+			}else{
+				throw new IllegalArgumentException("No team saved");
+			}
+		}catch (Exception e){
+			// Log the exception or handle it as needed
+			System.err.println("Error saving Team: " + e.getMessage());
+			// Return a 500 Internal Server Error
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving Team");
+		}
+	}
+
+	public ResponseEntity deleteTeam(@RequestBody Team team){
+		try{
+			teamService.deleteTeam(team.getId());
+		}catch (Exception e){
+			// Log the exception or handle it as needed
+			System.err.println("Error saving Team: " + e.getMessage());
+			// Return a 500 Internal Server Error
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting Team");
+		}
+		return ResponseEntity.ok().build();
+	}
+
 	public Optional<TelegramUser> getUserbyId(long id){
 		return telegramUserService.getUser(id);
 	}
@@ -851,6 +989,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			TelegramUser user = userOpt.get();
 			if ("Manager".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.ADD_NEW_TASK.getLabel());
+				row.add(BotLabels.CREATE_TEAM.getLabel());
 			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
 			}
@@ -864,7 +1003,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		messageToTelegram.setText("Tools addes to your markup keyboard");
 
 		try {
-				execute(messageToTelegram);
+			execute(messageToTelegram);
 		} catch (TelegramApiException e) {
 			// Log the error
 			logger.error("Error Markup Keyboard"+e.getLocalizedMessage(), e);
@@ -900,6 +1039,40 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 		return sb.toString();
 	}
+	//Prompts
+	public void promptForUserInformation(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter your name:");
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_NAME");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+	}
+	
+	public void promptForRole(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please select your role from the keyboard markup:");
+	
+		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		List<KeyboardRow> keyboard = new ArrayList<>();
+		KeyboardRow row = new KeyboardRow();
+		row.add("Manager");
+		row.add("Developer");
+		keyboard.add(row);
+		keyboardMarkup.setKeyboard(keyboard);
+		message.setReplyMarkup(keyboardMarkup);
+	
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_ROLE");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}		
+	}
 
 	// List of Sprints to String names
 	public String SprintListToStr(List<Sprint> sprintList) {
@@ -923,6 +1096,32 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
         }
     }
 
+
+	//Team Prompts
+	public void promptForTeamInformation(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter the team name:");
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_TEAM_NAME");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+	}
+
+	public void promptForTeamId(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter the team ID:");
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_TEAM_ID");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+	}
+
 	private String tasksToString(List<Task> tasks) {
 		StringBuilder sb = new StringBuilder();
 		if (tasks.isEmpty()) {
@@ -930,6 +1129,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		} else {
 			for (Task task : tasks) {
 				sb.append(task.getDescription()).append("\n"); // Assuming Task has a getDescription method
+			}
+		}
+		return sb.toString();
+	}
+
+	private String usersToString(List<TelegramUser> users) {
+		StringBuilder sb = new StringBuilder();
+		if (users.isEmpty()) {
+			sb.append("There are no users :)").append("\n");
+		} else {
+			for (TelegramUser user : users) {
+				sb.append(user.getName()).append(", Role: ").append(user.getRol()).append("\n"); // Assuming TelegramUser has a getName method
 			}
 		}
 		return sb.toString();

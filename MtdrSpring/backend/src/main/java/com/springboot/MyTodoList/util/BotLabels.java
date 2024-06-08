@@ -1,5 +1,7 @@
 package com.springboot.MyTodoList.util;
 
+import javax.ws.rs.DELETE;
+
 public enum BotLabels {
 	
 	SHOW_MAIN_SCREEN("Show Main Screen"), 
@@ -20,11 +22,13 @@ public enum BotLabels {
 	CREATE_TEAM("Create Team"),                 // Label for /createteam command
 	VIEW_TEAM_TASKS("View Team Tasks"),         // Label for /viewteamtasks command
 	EDIT_TEAM("Edit Team"),                     // Label for /editteam command
+	VIEW_TEAM_MEMBERS("View Team Members"),
 	DELETE_TEAM("Delete Team"),                 // Label for /deleteteam command
  	// Task Commands
 	ADD_NEW_TASK("Add New Task"),
 	M_ADD_TASK("Manager Add Task"),             // Label for /manageraddtask command
 	CHECK_MY_TASKS("Check My Tasks"),
+	UPDATE_TASK("Update Task"),
 	EDIT_TASK("Edit Task"),                     // Label for /edittask command
 	FINISH_TASK("Finish Task"),                 // Label for /finishtask command
 	VIEW_TASK("View Task"),                     // Label for /viewtask command
