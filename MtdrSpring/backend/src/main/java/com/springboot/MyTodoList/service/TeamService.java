@@ -23,7 +23,7 @@ public class TeamService {
     }
 
     public List<Team> findAll() {
-        return teamRepository.findAll();
+        return teamRepository.getAllTeams(); // antes: findAll();
     }
 
     public Optional<Team> getTeamById(Long id) {

@@ -54,7 +54,7 @@ public class Team implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-        
+
     // Sobrescribir toString para facilitar la depuración
     @Override
     public String toString() {

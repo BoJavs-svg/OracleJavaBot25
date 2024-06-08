@@ -22,8 +22,9 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query(value = "SELECT * FROM TEAM WHERE teamid = ?1", nativeQuery = true)
     List<Team> findByTeamId(Long teamId);
-
+    
     @Query(value = "SELECT id FROM TEAM WHERE name = ?1", nativeQuery = true)
     List<Team> findIdByTeamName(String teamName);
     
 }
+

@@ -1,39 +1,37 @@
 package com.springboot.MyTodoList.util;
 
 public enum BotCommands {
-	TODO_LIST("/todolist"),
-	CHECK_TASKS("/mytasks"),
-	ADD_TASK("/addtask"),
 
-	// User Commands
-    	START_COMMAND("/start"),
-    	HIDE_COMMAND("/hide"),
-    	CREATE_USER("/createuser"),
-    	EDIT_USER("/edituser"),
-    	DELETE_USER("/deleteuser"),
+	  // User Commands
+	  START_COMMAND("/start"),   //      // Create user
+	  HIDE_COMMAND("/hide"),
+	  EDIT_USER("/edituser"),          // Edit user
+	  DELETE_USER("/deleteuser"),      // Delete user
+  
+	  // Sprint Commands
+	  CREATE_SPRINT("/createsprint"),   // Create sprint
+	  VIEW_SPRINT_TASKS("/viewsprinttasks"),
+		VIEW_ALL_SPRINT_TASKS("/viewallsprinttasks"),
+	  EDIT_SPRINT("/editsprint"),       // Edit sprint
+	  DELETE_SPRINT("/deletesprint"),   // Delete sprint
+  
+	  // Team Commands
+	  CREATE_TEAM("/createteam"),       // Create team
+	  VIEW_TEAM_TASKS("/viewteamtasks"), // View team tasks
+	  EDIT_TEAM("/editteam"),           // Edit team
+	  DELETE_TEAM("/deleteteam"),       // Delete team
+	  VIEW_TEAM_MEMBERS("/viewteammembers"),
 
-    	// Sprint Commands
-    	CREATE_SPRINT("/createsprint"),
-    	VIEW_ALL_SPRINT_TASKS("/viewsprinttasks"),
-    	EDIT_SPRINT("/editsprint"),
-    	DELETE_SPRINT("/deletesprint"),
-
-    	// Team Commands
-    	CREATE_TEAM("/createteam"),
-    	VIEW_TEAM_TASKS("/viewteamtasks"),
-    	EDIT_TEAM("/editteam"),
-    	DELETE_TEAM("/deleteteam"),
-		VIEW_TEAM_MEMBERS("/viewteammembers"),
-	
-    	// Task Commands
-    	CREATE_TASK("/createtask"),
-    	EDIT_TASK("/edittask"),
-    	FINISH_TASK("/finishtask"),
-    	VIEW_USER_TASKS("/viewusertasks"),
-		VIEW_DEVELOPER_TASKS("/mytasks"),
-		VIEW_TASK("/viewtask"),
-		DELETE_TASK("/deletetask");
-
+	  // Task Commands
+	  ADD_TASK("/addtask"),         //    // Create task
+	  M_ADD_TASK("/manageraddtask"),    // Manager add task
+	  CHECK_TASKS("/mytasks"),     //     // Developer view all tasks
+	  EDIT_TASK("/edittask"),           // Edit task
+	  FINISH_TASK("/finishtask"),       // Finish task
+	  VIEW_TASK("/viewtask"),           // View specific task
+	  VIEW_USER_TASKS("/viewusertasks"),
+	  VIEW_DEVELOPER_TASKS("/mytasks"),
+	  DELETE_TASK("/deletetask");       // Delete task
 	private String command;
 
 	BotCommands(String enumCommand) {

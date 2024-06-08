@@ -1,6 +1,9 @@
 package com.springboot.MyTodoList.service;
 
 import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.model.Task;
+import com.springboot.MyTodoList.model.Team;
+import com.springboot.MyTodoList.model.TelegramUser;
 import com.springboot.MyTodoList.repository.SprintRepository;
 
 import oracle.security.crypto.cert.SPKAC;
@@ -30,8 +33,11 @@ public class SprintService {
 
     public Optional<Sprint> getSprintById(Long id) {
         return sprintRepository.findById(id);
-        
     }
+    public List<Sprint> getTeamSprints(Long teamId){
+        return sprintRepository.findByTeamId(teamId);
+    }
+
 
     public Sprint addSprint(Sprint sprint) {
         return sprintRepository.save(sprint);
@@ -61,5 +67,9 @@ public class SprintService {
         } else {
             return null;
         }
+    }
+    
+    public List<Sprint> getCurrentSprint(Long teamId){
+        return sprintRepository.getCurrentSprint(teamId);
     }
 }
