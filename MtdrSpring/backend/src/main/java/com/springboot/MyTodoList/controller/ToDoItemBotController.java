@@ -721,7 +721,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error("Error en mensaje recibido");
 						}
 					}
-				}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
+			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_OPT")){
 					if(isInt(messageTextFromTelegram)){
 						Integer opt = Integer.parseInt(messageTextFromTelegram); // selected Sprint number (index)
 						List<Sprint> sprintList = tempSSprints.get(chatId);
@@ -856,9 +856,41 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}catch (Exception e){
 					logger.error(e.getLocalizedMessage(), e);
 				}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TEAM_ID_TASKS")){
+				try{
+					Long teamId = Long.parseLong(messageTextFromTelegram);
+					Optional<Team> team = teamService.getTeamById(teamId);
+					if(team.isPresent()){
+						List<TelegramUser> members = telegramUserService.getUsersByTeamID(teamId);
+						List<Task> tasks;
+						for(TelegramUser member : members){
+							tasks = taskService.getTasksByUserId(member.getId()); 
+							String tasksToString = tasksToString(tasks); // Convert tasks to string
+							SendMessage messageToTelegram = new SendMessage();
+							messageToTelegram.setChatId(chatId);
+							messageToTelegram.setText(tasksToString); // Set the users string as the message text
+							try{
+								execute(messageToTelegram); // Send the message
+							}catch(TelegramApiException e){
+								logger.error(e.getLocalizedMessage(), e);
+							}
+						}
+					}else{
+						SendMessage messageToTelegram = new SendMessage();
+						messageToTelegram.setChatId(chatId);
+						messageToTelegram.setText("Invalid team ID");
+						try {
+							execute(messageToTelegram);
+						} catch (TelegramApiException e) {
+							logger.error(e.getLocalizedMessage(), e);
+						}
+					}
+				}catch(NumberFormatException e){
+					logger.error("Invalid team ID format: " + messageTextFromTelegram);
+					// Send a message indicating that the team ID format is invalid
+				}
 			}
-		}
-		}
+		}}
 	}
 	@Override
 	public String getBotUsername() {
@@ -1007,6 +1039,40 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		}
 		return sb.toString();
 	}
+	//Prompts
+	public void promptForUserInformation(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please enter your name:");
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_NAME");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}	
+	}
+	
+	public void promptForRole(long chatId) {
+		SendMessage message = new SendMessage();
+		message.setChatId(chatId);
+		message.setText("Please select your role from the keyboard markup:");
+	
+		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+		List<KeyboardRow> keyboard = new ArrayList<>();
+		KeyboardRow row = new KeyboardRow();
+		row.add("Manager");
+		row.add("Developer");
+		keyboard.add(row);
+		keyboardMarkup.setKeyboard(keyboard);
+		message.setReplyMarkup(keyboardMarkup);
+	
+		try {
+			execute(message);
+			userStates.put(chatId, "WAITING_FOR_ROLE");
+		} catch (TelegramApiException e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}		
+	}
 
 	// List of Sprints to String names
 	public String SprintListToStr(List<Sprint> sprintList) {
@@ -1043,8 +1109,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			logger.error(e.getLocalizedMessage(), e);
 		}	
 	}
-
-
 
 	public void promptForTeamId(long chatId) {
 		SendMessage message = new SendMessage();

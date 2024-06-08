@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 @Transactional
 public interface TaskRepository extends JpaRepository<Task, Long> {
-        List<Task> findByUserId(long userId);
 
+        @Query(value = "SELECT * FROM TASK WHERE userid = ?1", nativeQuery = true)
+        List<Task> findByUserId(long userId);
 }
