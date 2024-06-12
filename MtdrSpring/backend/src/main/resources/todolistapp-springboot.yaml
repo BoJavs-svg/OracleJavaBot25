@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: image: $DOCKER_REGISTRY/oraclebot/p8hws/todolistapp-springboot:0.1
+          image: "${DOCKER_REGISTRY}/todolistapp-springboot:0.1"
           imagePullPolicy: Always
           env:
             - name: db_user
