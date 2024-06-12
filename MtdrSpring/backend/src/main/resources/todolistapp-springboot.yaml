@@ -50,7 +50,7 @@ spec:
             - name: db_user
               value: "TODOUSER"
             - name: db_url
-              value: "jdbc:oracle:thin:@(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.mx-queretaro-1.oraclecloud.com))(connect_data=(service_name=gac52f4256f44f9_telegrambottx63b_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+              value: "jdbc:oracle:thin:@(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.mx-queretaro-1.oraclecloud.com))(connect_data=(service_name=gac52f4256f44f9_telegrambottx63b_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
             - name: todo.table.name
               value: "todoitem"
             - name: driver_class_name
