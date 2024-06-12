@@ -747,7 +747,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 												sb3.append(t.getDescription()+" - "+t.getStatus()+"\n");
 											}
 										}
-										if(sb3.isEmpty()){
+										if (sb3.length() == 0) {
 											sb3.append("No tasks added for this Sprint");
 										}
 										sb2.append(teamUsers.get(j).getName()+":\n"+sb3.toString()+"\n\n");
@@ -766,7 +766,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 											sb2.append(t.getDescription()+" - "+t.getStatus()+"\n");
 										}
 									}
-									if(sb2.isEmpty()){
+									if (sb2.length() == 0) {
 										sb2.append("No tasks added for this Sprint");
 									}
 								}catch (Exception e){
