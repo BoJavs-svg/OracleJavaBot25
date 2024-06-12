@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_DIR=$(pwd)
+SCRIPT_DIR=$(dirname $0)
 if [ -z "$TODO_PDB_NAME" ]; then
     echo "TODO_PDB_NAME not set. Will get it with state_get"
   export TODO_PDB_NAME=$(state_get MTDR_DB_NAME)
@@ -31,7 +31,9 @@ echo "Creating springboot deplyoment and service"
 export CURRENTTIME=$( date '+%F_%H:%M:%S' )
 echo CURRENTTIME is $CURRENTTIME  ...this will be appended to generated deployment yaml
 cp src/main/resources/todolistapp-springboot.yaml todolistapp-springboot-$CURRENTTIME.yaml
-echo Docker registry is $DOCKER_REGISTRY ...
+
+sed -i "s|%DOCKER_REGISTRY%|${DOCKER_REGISTRY}|g" todolistapp-springboot-$CURRENTTIME.yaml
+
 sed -e "s|%DOCKER_REGISTRY%|${DOCKER_REGISTRY}|g" todolistapp-springboot-${CURRENTTIME}.yaml > /tmp/todolistapp-springboot-${CURRENTTIME}.yaml
 mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURRENTTIME.yaml
 sed -e "s|%TODO_PDB_NAME%|${TODO_PDB_NAME}|g" todolistapp-springboot-${CURRENTTIME}.yaml > /tmp/todolistapp-springboot-${CURRENTTIME}.yaml
@@ -40,8 +42,6 @@ sed -e "s|%OCI_REGION%|${OCI_REGION}|g" todolistapp-springboot-${CURRENTTIME}.ya
 mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURRENTTIME.yaml
 sed -e "s|%UI_USERNAME%|${UI_USERNAME}|g" todolistapp-springboot-${CURRENTTIME}.yaml > /tmp/todolistapp-springboot-$CURRENTTIME.yaml
 mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURRENTTIME.yaml
-kubectl create secret generic db-wallet-secret --from-file=wallet=$(find "$(pwd)/../wallet" -name "W*") --namespace mtdrworkshop
-
 if [ -z "$1" ]; then
     kubectl apply -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml -n mtdrworkshop
 else
