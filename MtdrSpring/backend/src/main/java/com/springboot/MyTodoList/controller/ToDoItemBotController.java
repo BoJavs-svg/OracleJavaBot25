@@ -290,11 +290,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							logger.error(e.getLocalizedMessage(), e);
 						}
 				}else{
-					//Get all manager teams task
-					
-					//Get current sprint
-
-					//Get all tasks from current sprint
 
 
 					SendMessage messageToTelegram = new SendMessage();
@@ -888,7 +883,34 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error("Invalid team ID format: " + messageTextFromTelegram);
 					// Send a message indicating that the team ID format is invalid
 				}
-			}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TEAM_NAME")){
+				Team team = tempTeams.get(chatId);//new Team();
+				team.setName(messageTextFromTelegram);
+				tempTeams.put(chatId, team);
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Please enter the team description:");
+				try {
+					execute(messageToTelegram);
+					userStates.put(chatId, "WAITING_FOR_TEAM_DESCRIPTION");
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TEAM_DESCRIPTION")){
+				Team team = tempTeams.get(chatId);
+				team.setDescription(messageTextFromTelegram);
+				teamService.addTeam(team);
+				tempTeams.put(chatId, null);
+				userStates.put(chatId, null);
+				SendMessage messageToTelegram = new SendMessage();
+				messageToTelegram.setChatId(chatId);
+				messageToTelegram.setText("Request executed successfully!");
+				try {
+					execute(messageToTelegram);
+				} catch (TelegramApiException e) {
+					logger.error(e.getLocalizedMessage(), e);
+				}
+			}	
 		}}
 	}
 	@Override
