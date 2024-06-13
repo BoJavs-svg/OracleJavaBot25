@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
+          image: mx-queretaro-1.ocir.io/axolyk6ak3ol/telegrambot/tx63b/todolistapp-springboot:0.1
           imagePullPolicy: Always
           env:
             - name: db_user
@@ -57,7 +57,7 @@ spec:
             - name: driver_class_name
               value: "oracle.jdbc.OracleDriver"
             - name: OCI_REGION
-              value: "%OCI_REGION%"
+              value: "mx-queretaro-1"
             - name: dbpassword
               valueFrom:
                 secretKeyRef:
@@ -65,7 +65,7 @@ spec:
                   key: dbpassword
                   optional: true
             - name: ui_username
-              value: "%UI_USERNAME%"
+              value: "Team25"
             - name: ui_password
               valueFrom:
                 secretKeyRef:
