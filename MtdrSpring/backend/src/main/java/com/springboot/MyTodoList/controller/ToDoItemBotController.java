@@ -976,52 +976,59 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		return teamService.findAll();
 	}
 
-	//Markup keyboard
 	public void markupKB(String username, Long chatId) {
-		ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-		List<KeyboardRow> keyboard = new ArrayList<>();
-		KeyboardRow row = new KeyboardRow();
-		row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-		Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(username);
-		// Check if the user exists
-		if (userOpt.isPresent()) {
-			TelegramUser user = userOpt.get();
-			if ("Manager".equalsIgnoreCase(user.getRol())) {
-				row.add(BotLabels.CREATE_TEAM.getLabel());
-				row.add(BotLabels.EDIT_TEAM.getLabel());
-				row.add(BotLabels.DELETE_TEAM.getLabel());
-				row.add(BotLabels.VIEW_TEAM_TASKS.getLabel());
-				row.add(BotLabels.VIEW_TEAM_MEMBERS.getLabel());
-				row.add(BotLabels.CREATE_SPRINT.getLabel());
-				row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
-				row.add(BotLabels.DELETE_SPRINT.getLabel());
-				
-			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
-				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
-				row.add(BotLabels.ADD_NEW_TASK.getLabel());	
-				row.add(BotLabels.EDIT_TASK.getLabel());
-				row.add(BotLabels.FINISH_TASK.getLabel());
+    ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+    keyboardMarkup.setOneTimeKeyboard(true);
+    keyboardMarkup.setResizeKeyboard(true);
+    keyboardMarkup.setSelective(true);
+    
+    List<KeyboardRow> keyboard = new ArrayList<>();
+    KeyboardRow row = new KeyboardRow();
+    row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+    Optional<TelegramUser> userOpt = telegramUserService.getUserbyAccount(username);
+    if (userOpt.isPresent()) {
+        TelegramUser user = userOpt.get();
+        if ("Manager".equalsIgnoreCase(user.getRol())) {
+            row.add(BotLabels.CREATE_TEAM.getLabel());
+            row.add(BotLabels.EDIT_TEAM.getLabel());
+            row.add(BotLabels.DELETE_TEAM.getLabel());
+            keyboard.add(row);
+            row = new KeyboardRow();
+            row.add(BotLabels.VIEW_TEAM_TASKS.getLabel());
+            row.add(BotLabels.VIEW_TEAM_MEMBERS.getLabel());
+            row.add(BotLabels.CREATE_SPRINT.getLabel());
+            keyboard.add(row);
+            row = new KeyboardRow();
+            row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
+            row.add(BotLabels.DELETE_SPRINT.getLabel());
+            row.add(BotLabels.EDIT_USER.getLabel());
+            keyboard.add(row);
+        } else if ("Developer".equalsIgnoreCase(user.getRol())) {
+            row.add(BotLabels.CHECK_MY_TASKS.getLabel());
+            row.add(BotLabels.ADD_NEW_TASK.getLabel());
+            row.add(BotLabels.EDIT_TASK.getLabel());
+            keyboard.add(row);
+            row = new KeyboardRow();
+            row.add(BotLabels.FINISH_TASK.getLabel());
+            row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
+            row.add(BotLabels.EDIT_USER.getLabel());
+            keyboard.add(row);
+        }
+    }
 
+    keyboardMarkup.setKeyboard(keyboard);
+    SendMessage messageToTelegram = new SendMessage();
+    messageToTelegram.setChatId(chatId);
+    messageToTelegram.setReplyMarkup(keyboardMarkup);
+    messageToTelegram.setText("Tools added to your markup keyboard");
 
-			}			
-			row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
-			row.add(BotLabels.EDIT_USER.getLabel());
-		}
-
-		keyboard.add(row);
-		keyboardMarkup.setKeyboard(keyboard);
-		SendMessage messageToTelegram = new SendMessage();
-		messageToTelegram.setChatId(chatId);
-		messageToTelegram.setReplyMarkup(keyboardMarkup);
-		messageToTelegram.setText("Tools addes to your markup keyboard");
-
-		try {
-			execute(messageToTelegram);
-		} catch (TelegramApiException e) {
-			// Log the error
-			logger.error("Error Markup Keyboard"+e.getLocalizedMessage(), e);
-		}
-	}
+    try {
+        execute(messageToTelegram);
+    } catch (TelegramApiException e) {
+        // Log the error
+        logger.error("Error Markup Keyboard"+e.getLocalizedMessage(), e);
+    }
+}
 
 	// String to Timestamp format
 	public Timestamp strToTimestamp(String dateString) {
