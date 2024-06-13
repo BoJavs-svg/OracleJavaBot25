@@ -495,10 +495,9 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 					ResponseEntity entity = saveUser(newTelegramUser,chatId);		
 
-					messageToTelegram = new SendMessage();
+					SendMessage messageToTelegram = new SendMessage();
 					userMap.put(chatId,null);
 					userStates.put(chatId, null);
-					messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
 					messageToTelegram.setText("User saved correctly!");
 					execute(messageToTelegram);				
@@ -506,8 +505,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				} catch (Exception e) {
 					logger.error(e.getLocalizedMessage(), e);
 				}			
-				}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
-					try {
+			}else if(userStates.get(chatId).equals("WAITING_FOR_TASK_DESCRIPTION")){
+				try {
 						Task tempTask = tempTasks.get(chatId);
 						tempTask.setDescription(messageTextFromTelegram);
 						tempTask.setStatus("NotStarted");
