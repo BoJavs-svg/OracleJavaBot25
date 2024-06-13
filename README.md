@@ -1,21 +1,3 @@
-# OracleJavaBot25
-A repository for full stack Cloud Native applications with a React JS frontend and Java as backend on the Oracle Cloud Infrastructure. 
-
-# TO RUN
-```
-git clone https://github.com/BoJavs-svg/OracleJavaBot25.git
-```
-
-```
-cd OracleJavaBot25/MtdrSpring/
-chmod +x *.sh
-echo source $(pwd)/env.sh >> ~/.bashrc
-source env.sh
-source setup.sh
-```
-
-Sure! Here's a comprehensive README file for your GitHub repository based on your user manual:
-
 ---
 
 # Oracle Task Master
