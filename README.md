@@ -1,5 +1,5 @@
 # OracleJavaBot25
-A repository for full stack Cloud Native applications with a React JS frontend and various backends (Java, Python, DotNet, and so on) on the Oracle Cloud Infrastructure. 
+A repository for full stack Cloud Native applications with a React JS frontend and Java as backend on the Oracle Cloud Infrastructure. 
 
 # TO RUN
 ```
