@@ -152,5 +152,3 @@ This section provides a step-by-step guide on how to use the bot's functions. Co
 - **Finish Task**: `/finishtask` - Mark a task as finished (does not delete it).
 
 ---
-
-Feel free to modify this README as needed for your specific requirements or any additional details you'd like to include.
