@@ -5,7 +5,6 @@ import javax.ws.rs.DELETE;
 public enum BotLabels {
 	
 	SHOW_MAIN_SCREEN("Show Main Screen"), 
-	HIDE_MAIN_SCREEN("Hide Main Screen"),
 		
 	// User Commands
 	EDIT_USER("Edit User"),                     // Label for /edituser command

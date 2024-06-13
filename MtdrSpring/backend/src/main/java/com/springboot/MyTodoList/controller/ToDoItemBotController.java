@@ -216,7 +216,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				if(userOpt.get().getTeam().equals(null)){ // Si user no tiene un Team
 					SendMessage messageToTelegram = new SendMessage();
 					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.\nYou must be in a Team to crete Sprints.");
+					messageToTelegram.setText("It seems like you don't have a Team. Please contact your Admin to assign one to you.\nYou must be in a Team to see the Sprints.");
 					try {
 						execute(messageToTelegram);
 					} catch (TelegramApiException e) {
@@ -616,7 +616,6 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					} catch (TelegramApiException e) {
 						logger.error(e.getLocalizedMessage(), e);
 					}
-			//States
 
 			}else if(userStates.get(chatId).equals("WAITING_FOR_SPRINT_STARTDATE")){
 					Sprint tempSprint = tempSprints.get(chatId);
@@ -988,11 +987,25 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 		if (userOpt.isPresent()) {
 			TelegramUser user = userOpt.get();
 			if ("Manager".equalsIgnoreCase(user.getRol())) {
-				row.add(BotLabels.ADD_NEW_TASK.getLabel());
 				row.add(BotLabels.CREATE_TEAM.getLabel());
+				row.add(BotLabels.EDIT_TEAM.getLabel());
+				row.add(BotLabels.DELETE_TEAM.getLabel());
+				row.add(BotLabels.VIEW_TEAM_TASKS.getLabel());
+				row.add(BotLabels.VIEW_TEAM_MEMBERS.getLabel());
+				row.add(BotLabels.CREATE_SPRINT.getLabel());
+				row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
+				row.add(BotLabels.DELETE_SPRINT.getLabel());
+				
 			} else if ("Developer".equalsIgnoreCase(user.getRol())) {
 				row.add(BotLabels.CHECK_MY_TASKS.getLabel());
-			}
+				row.add(BotLabels.ADD_NEW_TASK.getLabel());	
+				row.add(BotLabels.EDIT_TASK.getLabel());
+				row.add(BotLabels.FINISH_TASK.getLabel());
+
+
+			}			
+			row.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
+			row.add(BotLabels.EDIT_USER.getLabel());
 		}
 
 		keyboard.add(row);
