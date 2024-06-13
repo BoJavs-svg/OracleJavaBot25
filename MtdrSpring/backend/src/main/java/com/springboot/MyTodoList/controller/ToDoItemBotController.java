@@ -490,11 +490,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}				
 			}else if (userStates.get(chatId).equals("WAITING_FOR_ROLE")) {
 				try {
-					TelegramUser newTelegramUser = userMap.get(chatId);
-					newTelegramUser.setRol(messageTextFromTelegram);
+					TelegramUser telegramUser = userMap.get(chatId);
+					TelegramUser newTelegramUser = new TelegramUser(telegramUser.getName(), telegramUser.getAccount(),messageTextFromTelegram);
+
 					ResponseEntity entity = saveUser(newTelegramUser,chatId);		
-				
-					SendMessage messageToTelegram = new SendMessage();
+
+					messageToTelegram = new SendMessage();
 					userMap.put(chatId,null);
 					userStates.put(chatId, null);
 					messageToTelegram = new SendMessage();
